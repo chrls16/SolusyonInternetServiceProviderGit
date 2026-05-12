@@ -173,13 +173,20 @@ public class LoginFragment extends Fragment {
                         name = snapshot.child("username").getValue(String.class);
                     }
 
-                    SharedPreferences userSession = requireActivity().getSharedPreferences("UserSession", 0);
-                    userSession.edit().putString("userName", name).apply();
-
                     String role = snapshot.child("role").getValue(String.class);
                     if (role != null) role = role.toLowerCase().trim();
 
+                    SharedPreferences userSession = requireActivity().getSharedPreferences("UserSession", 0);
+                    SharedPreferences.Editor editor = userSession.edit();
+                    editor.putString("userName", name);
+                    editor.putString("userRole", role);
+                    editor.apply();
+
                     if ("subscriber".equals(role)) {
+                        // Switch MainActivity to Subscriber layout before loading subscriber fragments
+                        if (getActivity() instanceof MainActivity) {
+                            ((MainActivity) getActivity()).setupLayout(true);
+                        }
                         checkApplicationStatus(uid);
                     } else if ("admin".equals(role)) {
                         navigateToFragment(new DashboardFragment(), true);
@@ -208,15 +215,8 @@ public class LoginFragment extends Fragment {
 
                     // 1. IF STATUS IS COMPLETED OR APPROVED: Show the Billing/Dashboard
                     if ("completed".equalsIgnoreCase(status) || "approved".equalsIgnoreCase(status)) {
-                        // Navigate to UserMainActivity for active accounts
-                        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                            if (isAdded()) {
-                                Intent intent = new Intent(getActivity(), UserMainActivity.class);
-                                intent.putExtra("TARGET_FRAGMENT", "BILLING");
-                                startActivity(intent);
-                                if (getActivity() != null) getActivity().finish();
-                            }
-                        }, 800);
+                        // This takes the user to their active account view
+                        navigateToFragment(new UserBillingFragment(), true);
                     }
                     // 2. IF STATUS IS STILL PENDING: Show the Digital Receipt
                     else {
@@ -238,15 +238,8 @@ public class LoginFragment extends Fragment {
                         }, 800);
                     }
                 } else {
-                    // NO APPLICATION FOUND: Take them to the UserMainActivity with Dashboard
-                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                        if (isAdded()) {
-                            Intent intent = new Intent(getActivity(), UserMainActivity.class);
-                            intent.putExtra("TARGET_FRAGMENT", "DASHBOARD");
-                            startActivity(intent);
-                            if (getActivity() != null) getActivity().finish();
-                        }
-                    }, 800);
+                    // NO APPLICATION FOUND: Take them to the application form
+                    navigateToFragment(new UserDashboardFragment(), true);
                 }
             }
 

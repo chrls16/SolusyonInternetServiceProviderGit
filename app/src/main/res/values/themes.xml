@@ -49,4 +49,24 @@
     <style name="App.Custom.Indicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
         <item name="android:color">#D1E4FF</item> <item name="marginHorizontal">12dp</item>
     </style>
+
+    <style name="CircleImage">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="UrgencyChipInfo">
+        <item name="android:textColor">#1E40AF</item>
+        <item name="android:background">#DBEAFE</item>
+    </style>
+
+    <style name="UrgencyChipWarning">
+        <item name="android:textColor">#854D0E</item>
+        <item name="android:background">#FEF9C3</item>
+    </style>
+
+    <style name="UrgencyChipCritical">
+        <item name="android:textColor">#991B1B</item>
+        <item name="android:background">#FEE2E2</item>
+    </style>
 </resources>

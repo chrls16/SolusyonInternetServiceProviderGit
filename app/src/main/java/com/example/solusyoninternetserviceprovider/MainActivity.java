@@ -4,7 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.TextView;
+import android.widget.TextView; // Added import
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,34 +26,46 @@ public class MainActivity extends AppCompatActivity {
 
     private BottomNavigationView bottomNavigationView;
     private ShapeableImageView ivProfile;
-    private TextView tvSolusyonLogo;
+    private TextView tvSolusyonLogo; // Added reference for the header text
     private DatabaseReference mDatabase;
+    private boolean isSubscriber;
     private final String DB_URL = "https://solusyon-isp-default-rtdb.asia-southeast1.firebasedatabase.app/";
-    private boolean isUserLayout = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // 1. Initial State Check
-        boolean isSubscriber = getIntent().getBooleanExtra("IS_SUBSCRIBER", false);
-        boolean isAutoLogin = getIntent().getBooleanExtra("IS_AUTO_LOGIN", false);
-        boolean shouldShowLogin = getIntent().getBooleanExtra("SHOW_LOGIN", false);
+        // Check for navigation flags to determine which layout to use
+        isSubscriber = getIntent().getBooleanExtra("IS_SUBSCRIBER", false);
+        
+        // Also check saved session if intent flag is not set
+        if (!isSubscriber) {
+            SharedPreferences prefs = getSharedPreferences("UserSession", MODE_PRIVATE);
+            String role = prefs.getString("userRole", "");
+            isSubscriber = "subscriber".equalsIgnoreCase(role);
+        }
+
+        setupLayout(isSubscriber);
 
         mDatabase = FirebaseDatabase.getInstance(DB_URL).getReference();
 
+        // 2. Initial Header Sync
+        syncWelcomeHeader();
+
+        // 3. Check for Navigation Flags
+        boolean shouldShowLogin = getIntent().getBooleanExtra("SHOW_LOGIN", false);
+        boolean isAutoLogin = getIntent().getBooleanExtra("IS_AUTO_LOGIN", false);
+
         if (savedInstanceState == null) {
             if (shouldShowLogin) {
-                setLayout(false);
                 loadFragment(new LoginFragment(), false);
                 toggleSystemUI(false);
             } else if (isSubscriber) {
-                setLayout(true);
                 loadFragment(new UserDashboardFragment(), false);
+                toggleSystemUI(true);
             } else if (isAutoLogin || FirebaseAuth.getInstance().getCurrentUser() != null) {
                 performSessionRoleCheck();
             } else {
-                setLayout(false);
                 loadFragment(new DashboardFragment(), false);
                 toggleSystemUI(true);
             }
@@ -61,84 +73,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Switches between Admin layout (activity_main) and Subscriber layout (activity_main_user)
-     */
-    private void setLayout(boolean userLayout) {
-        this.isUserLayout = userLayout;
-        if (userLayout) {
-            setContentView(R.layout.activity_main_user);
-            setupUserNavigation();
-        } else {
-            setContentView(R.layout.activity_main);
-            setupAdminNavigation();
-        }
-        syncWelcomeHeader();
-        ivProfile = findViewById(R.id.ivProfile);
-        if (ivProfile != null) {
-            ivProfile.setOnClickListener(v -> showLogoutDialog());
-        }
-    }
-
-    /**
-     * Set up the BottomNavigationView for the Admin Layout
-     */
-    private void setupAdminNavigation() {
-        bottomNavigationView = findViewById(R.id.bottomNavigation);
-        if (bottomNavigationView != null) {
-            bottomNavigationView.setOnItemSelectedListener(item -> {
-                Fragment selectedFragment = null;
-                int itemId = item.getItemId();
-
-                if (itemId == R.id.nav_dashboard) {
-                    selectedFragment = new DashboardFragment();
-                } else if (itemId == R.id.nav_subscribers) {
-                    selectedFragment = new SubscriberManagement();
-                } else if (itemId == R.id.nav_billing) {
-                    selectedFragment = new BillingFragment();
-                } else if (itemId == R.id.nav_reports) {
-                    selectedFragment = new ReportsFragment();
-                }
-
-                if (selectedFragment != null) {
-                    loadFragment(selectedFragment, true);
-                }
-                return true;
-            });
-        }
-    }
-
-    /**
-     * Set up the custom navigation for the User Layout
-     */
-    private void setupUserNavigation() {
-        View navDashboard = findViewById(R.id.nav_dashboard);
-        View navBilling = findViewById(R.id.nav_billing);
-        View navProfile = findViewById(R.id.nav_profile);
-
-        if (navDashboard != null) {
-            navDashboard.setOnClickListener(v -> loadFragment(new UserDashboardFragment(), true));
-        }
-        if (navBilling != null) {
-            navBilling.setOnClickListener(v -> loadFragment(new UserBillingFragment(), true));
-        }
-        if (navProfile != null) {
-            navProfile.setOnClickListener(v -> {
-                // Navigate to SubscriberProfileFragment
-                loadFragment(new SubscriberProfileFragment(), true);
-            });
-        }
-    }
-    /**
      * Updates the header text based on the saved user session.
+     * Splitting the name ensures we only show the first name for a cleaner UI.
      */
     public void syncWelcomeHeader() {
+        // Look for the ID only when this method is called
         tvSolusyonLogo = findViewById(R.id.tvSolusyonLogo);
+
+        // If tvSolusyonLogo is null, it means we are in the Admin layout.
+        // The code inside this 'if' will simply be skipped.
         if (tvSolusyonLogo != null) {
             SharedPreferences prefs = getSharedPreferences("UserSession", MODE_PRIVATE);
             String fullName = prefs.getString("userName", "");
 
             if (!fullName.isEmpty()) {
-                // Split to only show the first name
                 String firstName = fullName.split(" ")[0];
                 tvSolusyonLogo.setText("Welcome, " + firstName + "!");
             } else {
@@ -155,22 +103,28 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
-                    String name = snapshot.child("fullName").getValue(String.class);
-                    if (name == null || name.isEmpty()) {
-                        name = snapshot.child("username").getValue(String.class);
-                    }
+                    String role = snapshot.child("role").getValue(String.class);
 
+                    // Update header name even for auto-login sessions
+                    String name = snapshot.child("fullName").getValue(String.class);
                     if (name != null) {
                         getSharedPreferences("UserSession", MODE_PRIVATE)
                                 .edit().putString("userName", name).apply();
+                        syncWelcomeHeader();
                     }
 
-                    String role = snapshot.child("role").getValue(String.class);
                     if ("subscriber".equalsIgnoreCase(role)) {
-                        setLayout(true); // Switch to User Layout
-                        checkSubscriberStatus(uid);
+                        if (!isSubscriber) {
+                            // Restart with subscriber flag to use R.layout.activity_main_user
+                            Intent intent = new Intent(MainActivity.this, MainActivity.class);
+                            intent.putExtra("IS_SUBSCRIBER", true);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            checkSubscriberStatus(uid);
+                        }
                     } else {
-                        setLayout(false); // Switch to Admin Layout
                         loadFragment(new DashboardFragment(), false);
                         toggleSystemUI(true);
                     }
@@ -201,6 +155,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     loadFragment(new UserDashboardFragment(), false);
                 }
+                toggleSystemUI(true);
             }
             @Override public void onCancelled(@NonNull DatabaseError error) {}
         });
@@ -211,7 +166,9 @@ public class MainActivity extends AppCompatActivity {
                 .setTitle("Account")
                 .setMessage("Would you like to log out of your session?")
                 .setPositiveButton("Logout", (dialog, which) -> {
+                    // Clear user session data on logout
                     getSharedPreferences("UserSession", MODE_PRIVATE).edit().clear().apply();
+
                     FirebaseAuth.getInstance().signOut();
                     Intent intent = new Intent(MainActivity.this, WelcomeActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -220,6 +177,56 @@ public class MainActivity extends AppCompatActivity {
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
+    }
+
+    public void setupLayout(boolean subscriberMode) {
+        this.isSubscriber = subscriberMode;
+        if (isSubscriber) {
+            setContentView(R.layout.activity_main_user);
+        } else {
+            setContentView(R.layout.activity_main);
+        }
+
+        // Initialize Views
+        bottomNavigationView = findViewById(R.id.bottomNavigation);
+        ivProfile = findViewById(R.id.ivProfile);
+        
+        // Re-attach listeners
+        if (ivProfile != null) {
+            ivProfile.setOnClickListener(v -> showLogoutDialog());
+        }
+
+        if (bottomNavigationView != null) {
+            bottomNavigationView.setOnItemSelectedListener(item -> {
+                Fragment selectedFragment = null;
+                int itemId = item.getItemId();
+
+                if (itemId == R.id.nav_dashboard || itemId == R.id.nav_sub_dashboard) {
+                    if (isSubscriber) {
+                        selectedFragment = new UserDashboardFragment();
+                    } else {
+                        selectedFragment = new DashboardFragment();
+                    }
+                } else if (itemId == R.id.nav_subscribers) {
+                    selectedFragment = new SubscriberManagement();
+                } else if (itemId == R.id.nav_billing || itemId == R.id.nav_sub_billing) {
+                    if (isSubscriber) {
+                        selectedFragment = new UserBillingFragment();
+                    } else {
+                        selectedFragment = new BillingFragment();
+                    }
+                } else if (itemId == R.id.nav_reports) {
+                    selectedFragment = new ReportsFragment();
+                } else if (itemId == R.id.nav_sub_profile) {
+                    selectedFragment = new SubscriberProfileFragment();
+                }
+
+                if (selectedFragment != null) {
+                    loadFragment(selectedFragment, true);
+                }
+                return true;
+            });
+        }
     }
 
     public void toggleSystemUI(boolean show) {
