@@ -1,6 +1,8 @@
 package com.example.solusyoninternetserviceprovider;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Button; // Ensure this is imported
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -18,7 +20,7 @@ public class UserApplicationReceiptActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.user_application_receipt);
 
-        // 1. Initialize ALL Views (Including the status section views)
+        // 1. Initialize Views
         statusContainer = findViewById(R.id.statusContainer);
         tvStatusTitle = findViewById(R.id.tvStatusTitle);
         tvStatusDesc = findViewById(R.id.tvStatusDesc);
@@ -32,7 +34,10 @@ public class UserApplicationReceiptActivity extends AppCompatActivity {
         TextView tvPaymentName = findViewById(R.id.tvPaymentName);
         ImageView imgPaymentLogo = findViewById(R.id.imgPaymentLogo);
 
-        // 2. Get Data from Intent and fill the receipt
+        // Find the "Proceed to Create Account" button
+        Button btnCreateAccount = findViewById(R.id.btnCreateAccount);
+
+        // 2. Fill the receipt data from Intent
         Bundle data = getIntent().getExtras();
         if (data != null) {
             tvReceiptID.setText(data.getString("appId"));
@@ -44,7 +49,6 @@ public class UserApplicationReceiptActivity extends AppCompatActivity {
             String payment = data.getString("payment");
             tvPaymentName.setText(payment);
 
-            // Update payment icon
             if (payment != null && payment.contains("Gcash")) {
                 imgPaymentLogo.setImageResource(R.drawable.gcash);
             } else if (payment != null && payment.contains("Maya")) {
@@ -52,11 +56,27 @@ public class UserApplicationReceiptActivity extends AppCompatActivity {
             }
         }
 
-        // 3. Set Status to Pending (This will now work because views are initialized)
+        // 3. Set Status to Pending
         updateStatus("pending");
+
+        // 4. Button Logic: Go to Login
+        btnCreateAccount.setOnClickListener(v -> {
+            // Point to MainActivity
+            Intent intent = new Intent(UserApplicationReceiptActivity.this, MainActivity.class);
+
+            // This flag tells MainActivity to load the LoginFragment
+            intent.putExtra("SHOW_LOGIN", true);
+
+            // Clear the activity stack so the user can't "Go Back" to the receipt
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+            startActivity(intent);
+            finish();
+        });
     }
 
-    private void updateStatus(String status) {
+
+private void updateStatus(String status) {
         if (status == null) return;
 
         switch (status.toLowerCase()) {

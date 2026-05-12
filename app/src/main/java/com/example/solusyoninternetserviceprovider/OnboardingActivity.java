@@ -1,6 +1,7 @@
     package com.example.solusyoninternetserviceprovider;
 
     import android.content.Intent;
+    import android.content.SharedPreferences;
     import android.os.Bundle;
     import android.view.View;
     import android.widget.Button;
@@ -70,8 +71,17 @@
             tvSkip.setOnClickListener(v -> finishOnboarding());
         }
 
+// Inside OnboardingActivity.java
+
+// Top of the file
         private void finishOnboarding() {
-            // Navigate to the Welcome Screen instead of going directly to Login/Main
+            // Save the completion flag in SharedPreferences
+            SharedPreferences preferences = getSharedPreferences("onboarding_pref", MODE_PRIVATE);
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putBoolean("isFinished", true);
+            editor.apply();
+
+            // Navigate to the Welcome Screen
             Intent intent = new Intent(OnboardingActivity.this, WelcomeActivity.class);
             startActivity(intent);
             finish();

@@ -55,5 +55,18 @@
         <item name="cornerSize">50%</item>
     </style>
 
-</resources>
+    <style name="UrgencyChipInfo">
+        <item name="android:textColor">#1E40AF</item>
+        <item name="android:background">#DBEAFE</item>
+    </style>
 
+    <style name="UrgencyChipWarning">
+        <item name="android:textColor">#854D0E</item>
+        <item name="android:background">#FEF9C3</item>
+    </style>
+
+    <style name="UrgencyChipCritical">
+        <item name="android:textColor">#991B1B</item>
+        <item name="android:background">#FEE2E2</item>
+    </style>
+</resources>

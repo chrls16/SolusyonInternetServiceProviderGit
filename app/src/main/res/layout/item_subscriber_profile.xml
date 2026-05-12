@@ -13,57 +13,6 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="24dp"
-            android:clipChildren="false"
-            android:clipToPadding="false">
-
-            <ImageView
-                android:id="@+id/ivMenu"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_menu"
-                app:tint="@color/primary"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <ImageView
-                android:id="@+id/ivAppLogo"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:layout_marginStart="16dp"
-                android:adjustViewBounds="true"
-                android:src="@drawable/logo_solusyon1"
-                app:layout_constraintBottom_toBottomOf="@id/ivMenu"
-                app:layout_constraintStart_toEndOf="@id/ivMenu"
-                app:layout_constraintTop_toTopOf="@id/ivMenu" />
-
-            <ImageView
-                android:id="@+id/ivNotifications"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_notification"
-                app:tint="@color/neutral"
-                app:layout_constraintBottom_toBottomOf="@id/ivMenu"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/ivMenu" />
-
-            <View
-                android:layout_width="8dp"
-                android:layout_height="8dp"
-                android:layout_marginTop="2dp"
-                android:layout_marginEnd="2dp"
-                android:background="@drawable/badge_circle"
-                android:backgroundTint="@color/red_dot"
-                app:layout_constraintEnd_toEndOf="@id/ivNotifications"
-                app:layout_constraintTop_toTopOf="@id/ivNotifications" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -84,12 +33,16 @@
                     android:layout_height="100dp"
                     android:layout_marginBottom="16dp">
 
-                    <ImageView
+                    <com.google.android.material.imageview.ShapeableImageView
                         android:id="@+id/ivProfilePicture"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:background="#E0E0E0"
-                        android:src="@android:drawable/ic_menu_camera" />
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/ic_person"
+                        android:padding="2dp"
+                        app:strokeColor="#E2E8F0"
+                        app:strokeWidth="1dp"
+                        app:shapeAppearanceOverlay="@style/CircleImage" />
 
                     <View
                         android:id="@+id/vStatusDot"

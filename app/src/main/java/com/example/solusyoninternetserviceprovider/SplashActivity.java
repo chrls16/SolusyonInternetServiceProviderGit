@@ -1,11 +1,12 @@
 package com.example.solusyoninternetserviceprovider;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-
 import androidx.appcompat.app.AppCompatActivity;
+import com.google.firebase.auth.FirebaseAuth; // Add this
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -14,21 +15,33 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        // Hide the top action bar so the splash screen is full screen
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
         }
 
-        // Delay for 2.5 seconds (2500 milliseconds)
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            // 1. CHECK IF USER IS ALREADY LOGGED IN
+            if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+                Intent intent = new Intent(SplashActivity.this, MainActivity.class);
+                intent.putExtra("IS_AUTO_LOGIN", true); // Pass flag to MainActivity
+                startActivity(intent);
+                finish();
+                return;
+            }
 
-            // Change MainActivity.class to LoginActivity.class if you have a separate login screen!
-            Intent intent = new Intent(SplashActivity.this, OnboardingActivity.class);
+            // 2. CHECK ONBOARDING COMPLETION
+            SharedPreferences preferences = getSharedPreferences("onboarding_pref", MODE_PRIVATE);
+            boolean isFinished = preferences.getBoolean("isFinished", false);
+
+            Intent intent;
+            if (isFinished) {
+                intent = new Intent(SplashActivity.this, WelcomeActivity.class);
+            } else {
+                intent = new Intent(SplashActivity.this, OnboardingActivity.class);
+            }
+
             startActivity(intent);
-
-            // finish() prevents the user from pressing the back button to return to the loading screen
             finish();
-
         }, 2500);
     }
 }

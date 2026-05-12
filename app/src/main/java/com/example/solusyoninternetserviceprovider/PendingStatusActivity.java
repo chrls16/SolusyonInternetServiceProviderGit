@@ -1,6 +1,7 @@
 package com.example.solusyoninternetserviceprovider;
 
 import android.os.Bundle;
+import android.widget.ImageView; // Add this import
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,14 +21,26 @@ public class PendingStatusActivity extends AppCompatActivity {
     private PendingRequestAdapter adapter;
     private List<PendingRequestModel> requestList;
     private DatabaseReference mDatabase;
+    private ImageView btnBack; // Add this
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.pending_status);
 
+        // 1. Initialize Views
         rvPendingRequests = findViewById(R.id.rvPendingRequests);
+        btnBack = findViewById(R.id.id_btnBack); // Initialize the back button
+
         rvPendingRequests.setLayoutManager(new LinearLayoutManager(this));
+
+        // 2. Setup Back Button Listener
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> {
+                // Closes this activity and returns to the Dashboard
+                finish();
+            });
+        }
 
         requestList = new ArrayList<>();
         adapter = new PendingRequestAdapter(requestList, this);
@@ -38,7 +51,6 @@ public class PendingStatusActivity extends AppCompatActivity {
         fetchPendingApplications();
     }
 
-    // Inside PendingStatusActivity.java -> fetchPendingApplications()
     private void fetchPendingApplications() {
         mDatabase.addValueEventListener(new ValueEventListener() {
             @Override
@@ -48,7 +60,7 @@ public class PendingStatusActivity extends AppCompatActivity {
                     for (DataSnapshot ds : snapshot.getChildren()) {
                         PendingRequestModel model = ds.getValue(PendingRequestModel.class);
                         if (model != null) {
-                            model.setUid(ds.getKey()); // This is the user's UID
+                            model.setUid(ds.getKey());
                             if ("pending".equalsIgnoreCase(model.getStatus())) {
                                 requestList.add(model);
                             }
@@ -56,12 +68,9 @@ public class PendingStatusActivity extends AppCompatActivity {
                     }
                     adapter.notifyDataSetChanged();
 
-                    // If it's still empty, let's notify the user
                     if (requestList.isEmpty()) {
                         Toast.makeText(PendingStatusActivity.this, "No pending applications found.", Toast.LENGTH_SHORT).show();
                     }
-                } else {
-                    Toast.makeText(PendingStatusActivity.this, "Database node 'ServiceApplications' is empty.", Toast.LENGTH_SHORT).show();
                 }
             }
 
