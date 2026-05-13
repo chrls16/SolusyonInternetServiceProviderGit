@@ -56,8 +56,7 @@ public class MainActivity extends AppCompatActivity {
                 loadFragment(new LoginFragment(), false);
                 toggleSystemUI(false);
             } else if (isSubscriber) {
-                loadFragment(new ClientDashboardFragment(), false);
-                toggleSystemUI(true);
+                performSessionRoleCheck(); // Trigger the database check instead of loading a fragment
             } else if (isAutoLogin || FirebaseAuth.getInstance().getCurrentUser() != null) {
                 performSessionRoleCheck();
             } else {
@@ -123,7 +122,6 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
         finish();
     }
-
     private void checkSubscriberStatus(String uid) {
         mDatabase.child("ServiceApplications").child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -134,13 +132,15 @@ public class MainActivity extends AppCompatActivity {
                 } else if (snapshot.exists()) {
                     navigateToReceipt(snapshot);
                 } else {
-                    loadFragment(new ClientDashboardFragment(), false);
+                    // Load the FORM (user_dashboard.xml) for new users
+                    loadFragment(new UserDashboardFragment(), false);
                 }
                 toggleSystemUI(true);
             }
             @Override public void onCancelled(@NonNull DatabaseError error) {}
         });
     }
+
 
     private void navigateToReceipt(DataSnapshot snapshot) {
         Intent intent = new Intent(MainActivity.this, UserApplicationReceiptActivity.class);
@@ -163,10 +163,21 @@ public class MainActivity extends AppCompatActivity {
         }
 
         bottomNavigationView = findViewById(R.id.bottomNavigation);
+// Inside setupLayout(boolean subscriberMode)
         ivProfile = findViewById(R.id.ivProfile);
 
         if (ivProfile != null) {
-            ivProfile.setOnClickListener(v -> showLogoutDialog());
+            ivProfile.setOnClickListener(v -> {
+                if (isSubscriber) {
+                    // Load the Profile Dashboard for subscribers
+                    loadFragment(new SubscriberProfileFragment(), true);
+                    // Optionally, highlight the profile tab in bottom nav
+                    bottomNavigationView.setSelectedItemId(R.id.nav_sub_profile);
+                } else {
+                    // Keep logout for admins
+                    showLogoutDialog();
+                }
+            });
         }
 
         if (bottomNavigationView != null) {
@@ -224,6 +235,10 @@ public class MainActivity extends AppCompatActivity {
     public void toggleSystemUI(boolean show) {
         int visibility = show ? View.VISIBLE : View.GONE;
         if (bottomNavigationView != null) bottomNavigationView.setVisibility(visibility);
+        View headerLayout = findViewById(R.id.headerLayout);
+        if (headerLayout != null) {
+            headerLayout.setVisibility(visibility);
+        }
         if (ivProfile != null) ivProfile.setVisibility(visibility);
     }
 

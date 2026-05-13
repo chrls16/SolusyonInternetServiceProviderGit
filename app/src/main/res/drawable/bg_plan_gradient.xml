@@ -3,5 +3,5 @@
         android:startColor="@color/dashboard_blue_start"
         android:endColor="@color/dashboard_blue_end"
         android:angle="45" />
-    <corners android:radius="32dp" />
+    <corners android:radius="12dp" />
 </shape>

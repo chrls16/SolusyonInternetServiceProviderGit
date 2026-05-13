@@ -17,6 +17,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
@@ -217,6 +218,14 @@ public class LoginFragment extends Fragment {
                     if ("completed".equalsIgnoreCase(status) || "approved".equalsIgnoreCase(status)) {
                         // This takes the user to their active account view
                         navigateToFragment(new UserBillingFragment(), true);
+
+                        // FIX: Sync the Bottom Navigation Bar to "Billing"
+                        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                            if (getActivity() instanceof MainActivity) {
+                                BottomNavigationView bnv = getActivity().findViewById(R.id.bottomNavigation);
+                                if (bnv != null) bnv.setSelectedItemId(R.id.nav_sub_billing);
+                            }
+                        }, 850); // Matches the navigation delay
                     }
                     // 2. IF STATUS IS STILL PENDING: Show the Digital Receipt
                     else {
@@ -224,7 +233,6 @@ public class LoginFragment extends Fragment {
                         new Handler(Looper.getMainLooper()).postDelayed(() -> {
                             if (isAdded()) {
                                 Intent intent = new Intent(getActivity(), UserApplicationReceiptActivity.class);
-                                // Pass database values to the intent
                                 intent.putExtra("appId", snapshot.child("applicationId").getValue(String.class));
                                 intent.putExtra("date", snapshot.child("date").getValue(String.class));
                                 intent.putExtra("fullName", snapshot.child("fullName").getValue(String.class));
@@ -240,6 +248,14 @@ public class LoginFragment extends Fragment {
                 } else {
                     // NO APPLICATION FOUND: Take them to the application form
                     navigateToFragment(new UserDashboardFragment(), true);
+
+                    // FIX: Ensure Dashboard tab is highlighted
+                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                        if (getActivity() instanceof MainActivity) {
+                            BottomNavigationView bnv = getActivity().findViewById(R.id.bottomNavigation);
+                            if (bnv != null) bnv.setSelectedItemId(R.id.nav_sub_dashboard);
+                        }
+                    }, 850);
                 }
             }
 

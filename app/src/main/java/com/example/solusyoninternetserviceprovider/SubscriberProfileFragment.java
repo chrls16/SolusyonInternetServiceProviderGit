@@ -2,11 +2,19 @@ package com.example.solusyoninternetserviceprovider;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.location.Address;
+import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,28 +33,40 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import org.osmdroid.config.Configuration;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.Marker;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Locale;
+
 public class SubscriberProfileFragment extends Fragment {
 
-    private TextView tvName, tvSubscriberId, tvAccountStatus, tvLocationCity;
-    private TextView tvPlanTag, tvPackageTier, tvSpeed, tvBilling;
-    private TextView tvEmail, tvPhone, tvAddress;
-    private View vStatusDot;
-    private ImageView ivProfilePicture; // Added reference
+    private ImageView profileImage;
+    private TextView tvUserName, tvAccountId, tvPlanBadge, tvStatusBadge;
+    private EditText etFullName, etContactNumber, etEmailAddress, etServiceAddress;
+    private Button btnSaveChanges;
+    private TextView tvModemModel, tvMacAddress, tvIpAllocation, tvInstallationDate;
+    private TextView tvDataUsage;
+
+    private MapView map = null;
 
     private FirebaseAuth mAuth;
     private DatabaseReference mDatabase;
+    private Button btnLogoutProfile;
     private final String DB_URL = "https://solusyon-isp-default-rtdb.asia-southeast1.firebasedatabase.app/";
 
-    // 1. Create the Image Picker Launcher
     private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                     Uri imageUri = result.getData().getData();
                     if (imageUri != null) {
-                        ivProfilePicture.setImageURI(imageUri);
-                        Toast.makeText(getContext(), "Profile picture updated locally!", Toast.LENGTH_SHORT).show();
-                        // Note: To save this permanently, you'll need Firebase Storage
+                        saveImageAsBase64(imageUri);
                     }
                 }
             }
@@ -55,35 +75,62 @@ public class SubscriberProfileFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.item_subscriber_profile, container, false);
+        // 1. Initialize OSMDroid
+        Configuration.getInstance().load(getContext(), PreferenceManager.getDefaultSharedPreferences(getContext()));
+
+        View view = inflater.inflate(R.layout.user_profile_dashboard, container, false);
 
         initViews(view);
+
+        // 2. Map Setup
+        map = view.findViewById(R.id.mapView);
+        map.setMultiTouchControls(true);
+
+        // FIX: Prevents ScrollView from intercepting map touches (zoom/pan)
+        map.setOnTouchListener((v, event) -> {
+            v.getParent().requestDisallowInterceptTouchEvent(true);
+            return false;
+        });
+
+        // Default view (Paracale center)
+        GeoPoint startPoint = new GeoPoint(14.2861, 122.7844);
+        map.getController().setZoom(15.0);
+        map.getController().setCenter(startPoint);
 
         mAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance(DB_URL).getReference();
 
-        fetchSubscriberData();
+        fetchUserData();
 
-        // 2. Set Click Listener to change photo
-        ivProfilePicture.setOnClickListener(v -> openGallery());
+        profileImage.setOnClickListener(v -> openGallery());
+        btnSaveChanges.setOnClickListener(v -> saveChanges());
+
+        btnLogoutProfile.setOnClickListener(v -> {
+            // Show the same logout sheet used in the main activity
+            LogoutBottomSheet bottomSheet = new LogoutBottomSheet();
+            bottomSheet.show(getChildFragmentManager(), "LogoutBottomSheet");
+        });
 
         return view;
-    }
+        }
 
     private void initViews(View v) {
-        tvName = v.findViewById(R.id.tvName);
-        tvSubscriberId = v.findViewById(R.id.tvSubscriberId);
-        tvAccountStatus = v.findViewById(R.id.tvAccountStatus);
-        tvLocationCity = v.findViewById(R.id.tvLocationCity);
-        tvPlanTag = v.findViewById(R.id.tvPlanTag);
-        tvPackageTier = v.findViewById(R.id.tvPackageTier);
-        tvSpeed = v.findViewById(R.id.tvSpeed);
-        tvBilling = v.findViewById(R.id.tvBilling);
-        tvEmail = v.findViewById(R.id.tvEmail);
-        tvPhone = v.findViewById(R.id.tvPhone);
-        tvAddress = v.findViewById(R.id.tvAddress);
-        vStatusDot = v.findViewById(R.id.vStatusDot);
-        ivProfilePicture = v.findViewById(R.id.ivProfilePicture); // Make sure this ID exists in XML
+        profileImage = v.findViewById(R.id.profileImage);
+        tvUserName = v.findViewById(R.id.tvUserName);
+        tvAccountId = v.findViewById(R.id.tvAccountId);
+        tvPlanBadge = v.findViewById(R.id.tvPlanBadge);
+        tvStatusBadge = v.findViewById(R.id.tvStatusBadge);
+        etFullName = v.findViewById(R.id.etFullName);
+        etContactNumber = v.findViewById(R.id.etContactNumber);
+        etEmailAddress = v.findViewById(R.id.etEmailAddress);
+        etServiceAddress = v.findViewById(R.id.etServiceAddress);
+        btnSaveChanges = v.findViewById(R.id.btnSaveChanges);
+        tvModemModel = v.findViewById(R.id.tvModemModel);
+        tvMacAddress = v.findViewById(R.id.tvMacAddress);
+        tvIpAllocation = v.findViewById(R.id.tvIpAllocation);
+        tvInstallationDate = v.findViewById(R.id.tvInstallationDate);
+        tvDataUsage = v.findViewById(R.id.tvDataUsage);
+        btnLogoutProfile = v.findViewById(R.id.btnLogoutProfile);
     }
 
     private void openGallery() {
@@ -92,13 +139,34 @@ public class SubscriberProfileFragment extends Fragment {
         imagePickerLauncher.launch(intent);
     }
 
-    private void fetchSubscriberData() {
+    private void saveImageAsBase64(Uri imageUri) {
+        if (mAuth.getCurrentUser() == null) return;
+        try {
+            InputStream inputStream = getContext().getContentResolver().openInputStream(imageUri);
+            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+            Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, 400, 400, true);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 70, outputStream);
+            byte[] byteArray = outputStream.toByteArray();
+            String base64String = Base64.encodeToString(byteArray, Base64.DEFAULT);
+
+            String uid = mAuth.getCurrentUser().getUid();
+            mDatabase.child("users").child(uid).child("profilePictureUrl").setValue(base64String)
+                    .addOnSuccessListener(aVoid -> {
+                        profileImage.setImageBitmap(resizedBitmap);
+                        if (isAdded()) Toast.makeText(getContext(), "Profile updated!", Toast.LENGTH_SHORT).show();
+                    });
+        } catch (Exception e) {
+            Toast.makeText(getContext(), "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void fetchUserData() {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser == null) return;
-
         String uid = currentUser.getUid();
 
-        // A. Fetch from 'users' node for basic account info
+        // A. Basic User Info
         mDatabase.child("users").child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -106,18 +174,25 @@ public class SubscriberProfileFragment extends Fragment {
                     String name = snapshot.child("fullName").getValue(String.class);
                     String email = snapshot.child("email").getValue(String.class);
                     String phone = snapshot.child("phone").getValue(String.class);
+                    String profilePic = snapshot.child("profilePictureUrl").getValue(String.class);
 
-                    if (name != null) tvName.setText(name);
-                    if (email != null) tvEmail.setText(email);
-                    if (phone != null) tvPhone.setText(phone);
+                    if (name != null) { tvUserName.setText(name); etFullName.setText(name); }
+                    if (email != null) etEmailAddress.setText(email);
+                    if (phone != null) etContactNumber.setText(phone);
+
+                    if (profilePic != null && !profilePic.isEmpty()) {
+                        try {
+                            byte[] decoded = Base64.decode(profilePic, Base64.DEFAULT);
+                            Bitmap bitmap = BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
+                            profileImage.setImageBitmap(bitmap);
+                        } catch (Exception e) { profileImage.setImageResource(R.drawable.profile_placeholder); }
+                    }
                 }
             }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {}
+            @Override public void onCancelled(@NonNull DatabaseError error) {}
         });
 
-        // B. Fetch from 'ServiceApplications' node for technical/plan details
+        // B. Technical Details & Address (Syncs Map)
         mDatabase.child("ServiceApplications").child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -128,56 +203,67 @@ public class SubscriberProfileFragment extends Fragment {
                     String barangay = snapshot.child("barangay").getValue(String.class);
                     String purok = snapshot.child("purok").getValue(String.class);
 
-                    if (appId != null) tvSubscriberId.setText("SUBSCRIBER ID: " + appId);
-                    if (status != null) {
-                        tvAccountStatus.setText(status.toUpperCase() + " ACCOUNT");
-                        updateStatusUI(status);
-                    }
+                    if (appId != null) tvAccountId.setText("Account ID: " + appId);
+                    if (status != null) tvStatusBadge.setText("STATUS: " + status.toUpperCase());
+                    if (plan != null) tvPlanBadge.setText(plan.toUpperCase() + " FIBER");
 
-                    if (barangay != null) {
-                        tvLocationCity.setText(barangay.toUpperCase() + ", PARACALE");
-                        String fullAddr = (purok != null ? "Purok " + purok + ", " : "") + barangay + ", Paracale";
-                        tvAddress.setText(fullAddr);
-                    }
+                    String address = (purok != null ? "Purok " + purok + ", " : "") + (barangay != null ? barangay : "") + ", Paracale";
+                    etServiceAddress.setText(address);
 
-                    if (plan != null) {
-                        updatePlanDetails(plan);
-                    }
+                    // Sync map to the installation address
+                    syncMapWithAddress(address);
                 }
             }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {}
+            @Override public void onCancelled(@NonNull DatabaseError error) {}
         });
     }
 
-    private void updateStatusUI(String status) {
-        // Change dot color and badge style based on account status
-        if ("approved".equalsIgnoreCase(status) || "completed".equalsIgnoreCase(status)) {
-            vStatusDot.setBackgroundResource(R.drawable.dot_green);
-            tvAccountStatus.setBackgroundResource(R.drawable.bg_status_approved);
-        } else {
-            vStatusDot.setBackgroundResource(R.drawable.dot_inactive);
-            tvAccountStatus.setBackgroundResource(R.drawable.bg_tab_active);
-        }
+    private void syncMapWithAddress(String address) {
+        String fullAddress = address + ", Camarines Norte, Philippines";
+        Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
+        try {
+            List<Address> addresses = geocoder.getFromLocationName(fullAddress, 1);
+            if (addresses != null && !addresses.isEmpty()) {
+                Address loc = addresses.get(0);
+                GeoPoint point = new GeoPoint(loc.getLatitude(), loc.getLongitude());
+
+                map.getController().animateTo(point);
+                map.getController().setZoom(18.0);
+
+                map.getOverlays().clear();
+                Marker marker = new Marker(map);
+                marker.setPosition(point);
+                marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                marker.setTitle("Installation Site");
+                map.getOverlays().add(marker);
+                map.invalidate();
+            }
+        } catch (IOException e) { e.printStackTrace(); }
     }
 
-    private void updatePlanDetails(String planName) {
-        // Map the plan names to specific speeds and prices
-        tvPlanTag.setText(planName.toUpperCase() + " FIBER");
+    private void saveChanges() {
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) return;
+        String uid = currentUser.getUid();
 
-        if (planName.equalsIgnoreCase("Basic")) {
-            tvPackageTier.setText("Basic Home 25");
-            tvSpeed.setText("25");
-            tvBilling.setText("₱ 499.00");
-        } else if (planName.equalsIgnoreCase("Standard")) {
-            tvPackageTier.setText("Standard Plus 50");
-            tvSpeed.setText("50");
-            tvBilling.setText("₱ 699.00");
-        } else if (planName.equalsIgnoreCase("Pro")) {
-            tvPackageTier.setText("Enterprise Pro 100");
-            tvSpeed.setText("100");
-            tvBilling.setText("₱ 999.00");
-        }
+        String name = etFullName.getText().toString().trim();
+        String phone = etContactNumber.getText().toString().trim();
+        String email = etEmailAddress.getText().toString().trim();
+
+        mDatabase.child("users").child(uid).child("fullName").setValue(name);
+        mDatabase.child("users").child(uid).child("phone").setValue(phone);
+        mDatabase.child("users").child(uid).child("email").setValue(email)
+                .addOnSuccessListener(aVoid -> {
+                    if (isAdded()) {
+                        Toast.makeText(getContext(), "Saved!", Toast.LENGTH_SHORT).show();
+                        tvUserName.setText(name);
+                    }
+                });
     }
+
+    @Override
+    public void onResume() { super.onResume(); if (map != null) map.onResume(); }
+
+    @Override
+    public void onPause() { super.onPause(); if (map != null) map.onPause(); }
 }

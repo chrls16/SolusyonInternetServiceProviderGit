@@ -14,6 +14,19 @@ import com.google.firebase.auth.FirebaseAuth;
 
 public class LogoutBottomSheet extends BottomSheetDialogFragment {
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        // Remove the default pinkish Material 3 background from the container
+        if (getDialog() != null) {
+            View bottomSheet = getDialog().findViewById(com.google.android.material.R.id.design_bottom_sheet);
+            if (bottomSheet != null) {
+                // Setting this to transparent allows your white XML background to show through perfectly
+                bottomSheet.setBackgroundResource(android.R.color.transparent);
+            }
+        }
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

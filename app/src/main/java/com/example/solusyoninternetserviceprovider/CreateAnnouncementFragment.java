@@ -6,7 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.RadioGroup;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -16,7 +16,7 @@ import androidx.fragment.app.Fragment;
 public class CreateAnnouncementFragment extends Fragment {
 
     private EditText etTitle, etDescription;
-    private RadioGroup rgUrgency;
+    private RadioButton rbInfo, rbWarning, rbCritical; // Replaced RadioGroup with individual buttons
     private TextView tvSaveDraft;
     private Button btnBroadcast;
 
@@ -28,9 +28,22 @@ public class CreateAnnouncementFragment extends Fragment {
         // Initialize Views
         etTitle = view.findViewById(R.id.etAnnouncementTitle);
         etDescription = view.findViewById(R.id.etMessageDescription);
-        rgUrgency = view.findViewById(R.id.rgUrgency);
+        rbInfo = view.findViewById(R.id.rbInfo);
+        rbWarning = view.findViewById(R.id.rbWarning);
+        rbCritical = view.findViewById(R.id.rbCritical);
         tvSaveDraft = view.findViewById(R.id.tvSaveDraft);
         btnBroadcast = view.findViewById(R.id.btnBroadcastNow);
+
+        // Manual RadioGroup Logic: Ensure only one is checked at a time
+        View.OnClickListener urgencyListener = v -> {
+            rbInfo.setChecked(v.getId() == R.id.rbInfo);
+            rbWarning.setChecked(v.getId() == R.id.rbWarning);
+            rbCritical.setChecked(v.getId() == R.id.rbCritical);
+        };
+
+        rbInfo.setOnClickListener(urgencyListener);
+        rbWarning.setOnClickListener(urgencyListener);
+        rbCritical.setOnClickListener(urgencyListener);
 
         // Save as Draft Click
         tvSaveDraft.setOnClickListener(v -> {
@@ -40,16 +53,13 @@ public class CreateAnnouncementFragment extends Fragment {
         // Broadcast Click
         btnBroadcast.setOnClickListener(v -> {
             if (validateForm()) {
-                // Get selected Urgency Level
-                int selectedId = rgUrgency.getCheckedRadioButtonId();
+                // Get selected Urgency Level manually
                 String urgency = "";
-                if (selectedId == R.id.rbInfo) urgency = "Info";
-                else if (selectedId == R.id.rbWarning) urgency = "Warning";
-                else if (selectedId == R.id.rbCritical) urgency = "Critical";
+                if (rbInfo.isChecked()) urgency = "Info";
+                else if (rbWarning.isChecked()) urgency = "Warning";
+                else if (rbCritical.isChecked()) urgency = "Critical";
 
                 String title = etTitle.getText().toString().trim();
-
-                // Final submission feedback
                 Toast.makeText(getContext(), "Broadcast sent: " + title + " [" + urgency + "]", Toast.LENGTH_LONG).show();
             }
         });
@@ -64,6 +74,11 @@ public class CreateAnnouncementFragment extends Fragment {
         }
         if (etDescription.getText().toString().trim().isEmpty()) {
             etDescription.setError("Description required");
+            return false;
+        }
+        // Check if at least one is selected
+        if (!rbInfo.isChecked() && !rbWarning.isChecked() && !rbCritical.isChecked()) {
+            Toast.makeText(getContext(), "Please select an urgency level", Toast.LENGTH_SHORT).show();
             return false;
         }
         return true;

@@ -58,4 +58,14 @@ dependencies {
     implementation("com.google.firebase:firebase-database")
 
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
+    implementation("com.google.firebase:firebase-storage")
+
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+
+    implementation("com.google.android.gms:play-services-maps:19.0.0")
+
+    implementation("org.osmdroid:osmdroid-android:6.1.18")
+
+
 }

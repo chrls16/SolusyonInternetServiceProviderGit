@@ -4,17 +4,22 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F8FAFC"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    android:clipChildren="false"
+    android:clipToPadding="false">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="24dp"
+        android:clipChildren="false"
+        android:clipToPadding="false">
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -52,7 +57,7 @@
             android:layout_marginTop="20dp"
             android:text="Solusyon isn't just an ISP. We are the precision architects of the Philippines' digital future, building robust infrastructure that empowers communities and businesses."
             android:textColor="#475569"
-            android:textSize="16sp"
+            android:textSize="13sp"
             android:lineSpacingExtra="6dp" />
 
         <TextView
@@ -64,39 +69,81 @@
             android:textSize="22sp"
             android:textStyle="bold" />
 
+        <!-- Card 1: Added Elevation and CompatPadding -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             app:cardBackgroundColor="#EEF2FF"
             app:cardCornerRadius="16dp"
+            app:cardElevation="3dp"
+            app:cardUseCompatPadding="true"
             app:strokeWidth="0dp">
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="20dp">
-                <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@drawable/ic_rocket" app:tint="#2D62B5" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="Our Mission" android:textStyle="bold" android:textColor="#1E3A8A" />
-                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="To eliminate digital borders by deploying ultra-high-speed fiber networks to every corner of the archipelago." />
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_rocket"
+                    app:tint="#2D62B5" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Our Mission"
+                    android:textStyle="bold"
+                    android:textColor="#1E3A8A" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="To eliminate digital borders by deploying ultra-high-speed fiber networks to every corner of the archipelago." />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Card 2: Added Elevation and CompatPadding -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             app:cardBackgroundColor="#F0FDFA"
             app:cardCornerRadius="16dp"
+            app:cardElevation="3dp"
+            app:cardUseCompatPadding="true"
             app:strokeWidth="0dp">
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="20dp">
-                <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@drawable/ic_visibility" app:tint="#0F766E" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="Our Vision" android:textStyle="bold" android:textColor="#0F766E" />
-                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="To be the leading architect of a connected Philippines, empowering every community with precision-engineered internet." />
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_visibility"
+                    app:tint="#0F766E" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Our Vision"
+                    android:textStyle="bold"
+                    android:textColor="#0F766E" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="To be the leading architect of a connected Philippines, empowering every community with precision-engineered internet." />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -109,23 +156,43 @@
             android:textSize="22sp"
             android:textStyle="bold" />
 
+        <!-- Card 3: Added CompatPadding -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             app:cardBackgroundColor="@color/white"
             app:cardCornerRadius="16dp"
-            app:cardElevation="2dp">
+            app:cardElevation="3dp"
+            app:cardUseCompatPadding="true">
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="20dp">
-                <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@drawable/ic_hub" app:tint="#2D62B5" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="Infrastructure Excellence" android:textStyle="bold" />
-                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="We ensure zero latency and 100% uptime through redundant fiber pathways." />
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/logo_solusyon1"
+                    app:tint="#2D62B5" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Infrastructure Excellence"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="We ensure zero latency and 100% uptime through redundant fiber pathways." />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -135,6 +202,7 @@
             android:textSize="22sp"
             android:textStyle="bold" />
 
+        <!-- Card 4: Added Elevation and CompatPadding -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -142,24 +210,50 @@
             android:layout_marginBottom="24dp"
             app:cardBackgroundColor="#DEE9FA"
             app:cardCornerRadius="20dp"
-            app:cardElevation="0dp">
+            app:cardElevation="3dp"
+            app:cardUseCompatPadding="true">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp"> <LinearLayout
-                android:id="@+id/layoutLocation"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-                <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_location" app:tint="#1E3A8A" />
-                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:orientation="vertical">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Our Location" android:textStyle="bold" android:textColor="#0F172A" android:textSize="15sp" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Paracale, Camarines Norte" android:textColor="#475569" android:textSize="13sp" />
+                android:padding="20dp">
+
+                <LinearLayout
+                    android:id="@+id/layoutLocation"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_location"
+                        app:tint="#1E3A8A" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Our Location"
+                            android:textStyle="bold"
+                            android:textColor="#0F172A"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Paracale, Camarines Norte"
+                            android:textColor="#475569"
+                            android:textSize="13sp" />
+                    </LinearLayout>
                 </LinearLayout>
-            </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/layoutEmail"
@@ -168,10 +262,33 @@
                     android:layout_marginTop="20dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
-                    <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_email" app:tint="#1E3A8A" />
-                    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Email Address" android:textStyle="bold" android:textColor="#0F172A" android:textSize="15sp" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="support@solusyon.net" android:textColor="#475569" android:textSize="13sp" />
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_email"
+                        app:tint="#1E3A8A" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Email Address"
+                            android:textStyle="bold"
+                            android:textColor="#0F172A"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="support@solusyon.net"
+                            android:textColor="#475569"
+                            android:textSize="13sp" />
                     </LinearLayout>
                 </LinearLayout>
 
@@ -182,17 +299,41 @@
                     android:layout_marginTop="20dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
-                    <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_phone" app:tint="#1E3A8A" />
-                    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Phone Number" android:textStyle="bold" android:textColor="#0F172A" android:textSize="15sp" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="+63 (02) 844-9021" android:textColor="#475569" android:textSize="13sp" />
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_phone"
+                        app:tint="#1E3A8A" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Phone Number"
+                            android:textStyle="bold"
+                            android:textColor="#0F172A"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="+63 (02) 844-9021"
+                            android:textColor="#475569"
+                            android:textSize="13sp" />
                     </LinearLayout>
                 </LinearLayout>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnSendMessage"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp" android:layout_marginTop="24dp"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="24dp"
                     android:backgroundTint="#1E3A8A"
                     android:text="Send Message"
                     android:textAllCaps="false"

@@ -4,20 +4,26 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F8FAFC"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    android:clipChildren="false"
+    android:clipToPadding="false">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="20dp"
+        android:clipChildren="false"
+        android:clipToPadding="false">
 
+        <!-- Header Card: Updated to 12dp and fixed shadows -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="140dp"
             app:cardBackgroundColor="#2D62B5"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="4dp">
+            app:cardCornerRadius="12dp"
+            app:cardElevation="6dp"
+            app:cardUseCompatPadding="true">
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -47,7 +53,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="16dp"
             android:text="What is the problem?"
             android:textColor="#0F172A"
             android:textSize="18sp"
@@ -69,19 +75,24 @@
             android:textSize="18sp"
             android:textStyle="bold" />
 
+        <!-- Incident Details Section -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             app:cardBackgroundColor="@color/white"
-            app:cardCornerRadius="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:cardUseCompatPadding="true"
             app:strokeWidth="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="20dp"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -90,37 +101,61 @@
                     android:textColor="#1E293B"
                     android:textStyle="bold" />
 
-                <EditText
+                <!-- Location field with shadow -->
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
-                    android:layout_height="55dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_input_field"
-                    android:hint="House number or Landmark"
-                    android:paddingHorizontal="16dp" />
+                    app:cardBackgroundColor="@android:color/white"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="2dp"
+                    app:cardUseCompatPadding="true"
+                    app:strokeWidth="0dp">
+
+                    <EditText
+                        android:layout_width="match_parent"
+                        android:layout_height="55dp"
+                        android:background="@android:color/transparent"
+                        android:hint="House number or Landmark"
+                        android:paddingHorizontal="16dp"
+                        android:textSize="14sp" />
+                </com.google.android.material.card.MaterialCardView>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="12dp"
                     android:text="Description"
                     android:textColor="#1E293B"
                     android:textStyle="bold" />
 
-                <EditText
+                <!-- Description field with shadow -->
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
-                    android:layout_height="120dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_input_field"
-                    android:gravity="top"
-                    android:hint="Briefly describe what happened..."
-                    android:padding="16dp" />
+                    app:cardBackgroundColor="@android:color/white"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="2dp"
+                    app:cardUseCompatPadding="true"
+                    app:strokeWidth="0dp">
+
+                    <EditText
+                        android:layout_width="match_parent"
+                        android:layout_height="120dp"
+                        android:background="@android:color/transparent"
+                        android:gravity="top"
+                        android:hint="Briefly describe what happened..."
+                        android:padding="16dp"
+                        android:textSize="14sp" />
+                </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="8dp"
             android:background="@drawable/bg_light_blue_rounded"
             android:gravity="center_vertical"
             android:padding="16dp">
@@ -164,7 +199,8 @@
             android:textAllCaps="false"
             android:textSize="16sp"
             android:textStyle="bold"
-            app:cornerRadius="12dp" />
+            app:cornerRadius="12dp"
+            android:elevation="4dp" />
 
     </LinearLayout>
 </ScrollView>

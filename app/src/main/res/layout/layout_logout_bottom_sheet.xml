@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/bg_bottom_sheet"
+    android:backgroundTint="@android:color/white"
     android:gravity="center_horizontal"
     android:orientation="vertical"
     android:padding="24dp">
@@ -15,19 +16,20 @@
         android:layout_marginBottom="32dp"/>
 
     <com.google.android.material.card.MaterialCardView
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        app:cardBackgroundColor="#EEF2FF"
-        app:cardCornerRadius="24dp"
-        app:cardElevation="0dp">
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        app:cardBackgroundColor="@android:color/white"
+        app:cardCornerRadius="60dp"
+        app:cardElevation="0dp"
+        app:strokeColor="#DBEAFE"
+        app:strokeWidth="1dp">
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="28dp"
-            android:src="@drawable/ic_logout"
-            app:tint="#1E3A8A" />
+            android:padding="0dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_logout" />
     </com.google.android.material.card.MaterialCardView>
-
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
