@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.auth.FirebaseAuth;
 
 public class SetNewPasswordFragment extends Fragment {
 
@@ -35,23 +36,25 @@ public class SetNewPasswordFragment extends Fragment {
         btnUpdatePassword = view.findViewById(R.id.btnUpdatePassword);
         btnCancel = view.findViewById(R.id.btnCancel);
 
-        // Navigation
-        btnBack.setOnClickListener(v -> requireActivity().getSupportFragmentManager().popBackStack());
-        btnCancel.setOnClickListener(v -> requireActivity().getSupportFragmentManager().popBackStack());
+        // Retrieve oobCode passed from deep link / arguments
+        String oobCode = getArguments() != null ? getArguments().getString("oobCode") : null;
 
         btnUpdatePassword.setOnClickListener(v -> {
-            String newP = etNewPassword.getText().toString().trim();
-            String confP = etConfirmPassword.getText().toString().trim();
-
-            if (newP.isEmpty() || confP.isEmpty()) {
-                Toast.makeText(getContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show();
-            } else if (!newP.equals(confP)) {
-                etConfirmPassword.setError("Passwords do not match");
-            } else {
-                // Procedural success
-                Toast.makeText(getContext(), "Password successfully updated!", Toast.LENGTH_SHORT).show();
-                requireActivity().getSupportFragmentManager().popBackStack();
+            String newPass = etNewPassword.getText().toString().trim();
+            if (oobCode == null) {
+                Toast.makeText(getContext(), "Invalid link", Toast.LENGTH_SHORT).show();
+                return;
             }
+
+            com.google.firebase.auth.FirebaseAuth.getInstance().confirmPasswordReset(oobCode, newPass)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(getContext(), "Success! Login with new password.", Toast.LENGTH_LONG).show();
+                            requireActivity().getSupportFragmentManager().popBackStack();
+                        } else {
+                            Toast.makeText(getContext(), "Failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
         });
     }
 }

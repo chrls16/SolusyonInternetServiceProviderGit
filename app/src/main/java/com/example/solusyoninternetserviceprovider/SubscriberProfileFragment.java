@@ -1,51 +1,10 @@
 package com.example.solusyoninternetserviceprovider;
-
-import android.app.Activity;
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.location.Address;
-import android.location.Geocoder;
-import android.net.Uri;
-import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.util.Base64;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-
-import org.osmdroid.config.Configuration;
-import org.osmdroid.util.GeoPoint;
-import org.osmdroid.views.MapView;
-import org.osmdroid.views.overlay.Marker;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import java.util.Locale;
-
+import android.app.Activity; import android.content.Intent; import android.graphics.Bitmap; import android.graphics.BitmapFactory; import android.location.Address; import android.location.Geocoder; import android.net.Uri; import android.os.Bundle; import android.preference.PreferenceManager; import android.util.Base64; import android.view.LayoutInflater; import android.view.View; import android.view.ViewGroup; import android.widget.Button; import android.widget.EditText; import android.widget.ImageView; import android.widget.TextView; import android.widget.Toast;
+import androidx.activity.result.ActivityResultLauncher; import androidx.activity.result.contract.ActivityResultContracts; import androidx.annotation.NonNull; import androidx.annotation.Nullable; import androidx.fragment.app.Fragment;
+import com.google.firebase.auth.FirebaseAuth; import com.google.firebase.auth.FirebaseUser; import com.google.firebase.database.DataSnapshot; import com.google.firebase.database.DatabaseError; import com.google.firebase.database.DatabaseReference; import com.google.firebase.database.FirebaseDatabase; import com.google.firebase.database.ValueEventListener;
+import org.osmdroid.config.Configuration; import org.osmdroid.util.GeoPoint; import org.osmdroid.views.MapView; import org.osmdroid.views.overlay.Marker;
+import java.io.ByteArrayOutputStream; import java.io.IOException; import java.io.InputStream; import java.util.List; import java.util.Locale;
 public class SubscriberProfileFragment extends Fragment {
-
     private ImageView profileImage;
     private TextView tvUserName, tvAccountId, tvPlanBadge, tvStatusBadge;
     private EditText etFullName, etContactNumber, etEmailAddress, etServiceAddress;
@@ -112,7 +71,7 @@ public class SubscriberProfileFragment extends Fragment {
         });
 
         return view;
-        }
+    }
 
     private void initViews(View v) {
         profileImage = v.findViewById(R.id.profileImage);
@@ -131,6 +90,7 @@ public class SubscriberProfileFragment extends Fragment {
         tvInstallationDate = v.findViewById(R.id.tvInstallationDate);
         tvDataUsage = v.findViewById(R.id.tvDataUsage);
         btnLogoutProfile = v.findViewById(R.id.btnLogoutProfile);
+        profileImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
     }
 
     private void openGallery() {
@@ -144,7 +104,22 @@ public class SubscriberProfileFragment extends Fragment {
         try {
             InputStream inputStream = getContext().getContentResolver().openInputStream(imageUri);
             Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-            Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, 400, 400, true);
+
+            // FIX: CROP TO SQUARE TO PREVENT COMPRESSION/STRETCHING
+            Bitmap squareBitmap;
+            if (bitmap.getWidth() >= bitmap.getHeight()) {
+                squareBitmap = Bitmap.createBitmap(bitmap,
+                        bitmap.getWidth() / 2 - bitmap.getHeight() / 2, 0,
+                        bitmap.getHeight(), bitmap.getHeight());
+            } else {
+                squareBitmap = Bitmap.createBitmap(bitmap, 0,
+                        bitmap.getHeight() / 2 - bitmap.getWidth() / 2,
+                        bitmap.getWidth(), bitmap.getWidth());
+            }
+
+            // Resize the square version
+            Bitmap resizedBitmap = Bitmap.createScaledBitmap(squareBitmap, 400, 400, true);
+
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 70, outputStream);
             byte[] byteArray = outputStream.toByteArray();
@@ -219,6 +194,7 @@ public class SubscriberProfileFragment extends Fragment {
     }
 
     private void syncMapWithAddress(String address) {
+        if (!isAdded() || getContext() == null) return;
         String fullAddress = address + ", Camarines Norte, Philippines";
         Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
         try {

@@ -164,6 +164,8 @@
                             android:layout_height="45dp"
                             android:button="@null"
                             android:gravity="center"
+                            android:clickable="false"
+                            android:focusable="false"
                             android:text="Info"
                             android:checked="true" />
                     </com.google.android.material.card.MaterialCardView>
@@ -184,6 +186,8 @@
                             android:layout_height="45dp"
                             android:button="@null"
                             android:gravity="center"
+                            android:clickable="false"
+                            android:focusable="false"
                             android:text="Warning" />
                     </com.google.android.material.card.MaterialCardView>
 
@@ -196,6 +200,7 @@
                         app:cardElevation="2dp"
                         app:cardUseCompatPadding="true"
                         app:strokeWidth="0dp">
+
                         <RadioButton
                             android:id="@+id/rbCritical"
                             style="@style/UrgencyChipCritical"
@@ -203,6 +208,8 @@
                             android:layout_height="45dp"
                             android:button="@null"
                             android:gravity="center"
+                            android:clickable="false"
+                            android:focusable="false"
                             android:text="Critical" />
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>

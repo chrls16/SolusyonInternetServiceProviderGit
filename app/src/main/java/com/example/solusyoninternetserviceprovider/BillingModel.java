@@ -1,17 +1,19 @@
 package com.example.solusyoninternetserviceprovider;
 
 public class BillingModel {
-    private String name, accountNo, planName, planSpeed, planType, status;
+    private String name, accountNo, planName, planSpeed, planType, status, price, date;
 
-    public BillingModel() {} // Required for Firebase
+    public BillingModel() {}
 
-    public BillingModel(String name, String accountNo, String planName, String planSpeed, String planType, String status) {
+    public BillingModel(String name, String accountNo, String planName, String planSpeed, String planType, String status, String price, String date) {
         this.name = name;
         this.accountNo = accountNo;
         this.planName = planName;
         this.planSpeed = planSpeed;
         this.planType = planType;
         this.status = status;
+        this.price = price;
+        this.date = date;
     }
 
     public String getName() { return name; }
@@ -20,6 +22,10 @@ public class BillingModel {
     public String getPlanSpeed() { return planSpeed; }
     public String getPlanType() { return planType; }
     public String getStatus() { return status; }
+
+    public String getPrice() { return price; }
+    public String getDate() { return date; }
+
 
     public String getInitials() {
         if (name == null || name.isEmpty()) return "";

@@ -2,7 +2,11 @@ package com.example.solusyoninternetserviceprovider;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Base64;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -13,8 +17,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.bottomsheet.BottomSheetDialog; // Added
-import com.google.android.material.button.MaterialButton; // Added
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -30,14 +34,15 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvSolusyonLogo;
     private DatabaseReference mDatabase;
     private boolean isSubscriber;
+    public String applicationStatus = ""; // Public so LoginFragment can update it
     private final String DB_URL = "https://solusyon-isp-default-rtdb.asia-southeast1.firebasedatabase.app/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mDatabase = FirebaseDatabase.getInstance(DB_URL).getReference();
 
         isSubscriber = getIntent().getBooleanExtra("IS_SUBSCRIBER", false);
-
         if (!isSubscriber) {
             SharedPreferences prefs = getSharedPreferences("UserSession", MODE_PRIVATE);
             String role = prefs.getString("userRole", "");
@@ -45,25 +50,63 @@ public class MainActivity extends AppCompatActivity {
         }
 
         setupLayout(isSubscriber);
-        mDatabase = FirebaseDatabase.getInstance(DB_URL).getReference();
         syncWelcomeHeader();
+        syncProfilePicture();
+        handleDeepLink(getIntent());
 
-        boolean shouldShowLogin = getIntent().getBooleanExtra("SHOW_LOGIN", false);
-        boolean isAutoLogin = getIntent().getBooleanExtra("IS_AUTO_LOGIN", false);
+        // Handle deep link for password reset
+        handleDeepLink(getIntent());
 
         if (savedInstanceState == null) {
-            if (shouldShowLogin) {
+            if (getIntent().getBooleanExtra("SHOW_LOGIN", false)) {
                 loadFragment(new LoginFragment(), false);
                 toggleSystemUI(false);
-            } else if (isSubscriber) {
-                performSessionRoleCheck(); // Trigger the database check instead of loading a fragment
-            } else if (isAutoLogin || FirebaseAuth.getInstance().getCurrentUser() != null) {
-                performSessionRoleCheck();
             } else {
-                loadFragment(new DashboardFragment(), false);
-                toggleSystemUI(true);
+                performSessionRoleCheck();
             }
         }
+    }
+
+    private void handleDeepLink(Intent intent) {
+        if (intent != null && intent.getData() != null) {
+            android.net.Uri data = intent.getData();
+            if (data.getQueryParameter("oobCode") != null) {
+                String oobCode = data.getQueryParameter("oobCode");
+
+                // Navigate to SetNewPasswordFragment and pass the code
+                SetNewPasswordFragment fragment = new SetNewPasswordFragment();
+                Bundle bundle = new Bundle();
+                bundle.putString("oobCode", oobCode);
+                fragment.setArguments(bundle);
+
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, fragment)
+                        .commit();
+
+                toggleSystemUI(false); // Hide bars for reset screen
+            }
+        }
+    }
+    private void syncProfilePicture() {
+        String uid = FirebaseAuth.getInstance().getUid();
+        if (uid == null) return;
+        mDatabase.child("users").child(uid).child("profilePictureUrl")
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        String base64Image = snapshot.getValue(String.class);
+                        if (base64Image != null && !base64Image.isEmpty() && ivProfile != null) {
+                            try {
+                                byte[] decodedString = Base64.decode(base64Image, Base64.DEFAULT);
+                                Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                                ivProfile.setImageBitmap(decodedByte);
+                            } catch (Exception e) {
+                                ivProfile.setImageResource(R.drawable.logo);
+                            }
+                        }
+                    }
+                    @Override public void onCancelled(@NonNull DatabaseError error) {}
+                });
     }
 
     public void syncWelcomeHeader() {
@@ -83,7 +126,6 @@ public class MainActivity extends AppCompatActivity {
     private void performSessionRoleCheck() {
         String uid = FirebaseAuth.getInstance().getUid();
         if (uid == null) return;
-
         mDatabase.child("users").child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -91,20 +133,13 @@ public class MainActivity extends AppCompatActivity {
                     String role = snapshot.child("role").getValue(String.class);
                     String name = snapshot.child("fullName").getValue(String.class);
                     if (name != null) {
-                        getSharedPreferences("UserSession", MODE_PRIVATE)
-                                .edit()
-                                .putString("userName", name)
-                                .putString("userRole", role)
-                                .apply();
+                        getSharedPreferences("UserSession", MODE_PRIVATE).edit()
+                                .putString("userName", name).putString("userRole", role).apply();
                         syncWelcomeHeader();
                     }
-
                     if ("subscriber".equalsIgnoreCase(role)) {
-                        if (!isSubscriber) {
-                            restartForSubscriber();
-                        } else {
-                            checkSubscriberStatus(uid);
-                        }
+                        if (!isSubscriber) restartForSubscriber();
+                        else checkSubscriberStatus(uid);
                     } else {
                         loadFragment(new DashboardFragment(), false);
                         toggleSystemUI(true);
@@ -115,6 +150,35 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void checkSubscriberStatus(String uid) {
+        if (uid == null) return;
+        mDatabase.child("ServiceApplications").child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    applicationStatus = snapshot.child("status").getValue(String.class);
+                    if (applicationStatus == null) applicationStatus = "pending";
+
+                    if ("completed".equalsIgnoreCase(applicationStatus)) {
+                        loadFragment(new ClientDashboardFragment(), false);
+                        toggleSystemUI(true); // SHOW UI
+                    } else if ("approved".equalsIgnoreCase(applicationStatus)) {
+                        loadFragment(new UserBillingFragment(), false);
+                        toggleSystemUI(true); // SHOW UI
+                    } else {
+                        navigateToReceipt(snapshot); // Activity handles its own UI
+                    }
+                } else {
+                    applicationStatus = "";
+                    loadFragment(new UserDashboardFragment(), false);
+                    toggleSystemUI(false); // HIDE UI for Step 2 Form
+                }
+            }
+            @Override public void onCancelled(@NonNull DatabaseError error) {}
+        });
+    }
+
+
     private void restartForSubscriber() {
         Intent intent = new Intent(MainActivity.this, MainActivity.class);
         intent.putExtra("IS_SUBSCRIBER", true);
@@ -122,25 +186,6 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
         finish();
     }
-    private void checkSubscriberStatus(String uid) {
-        mDatabase.child("ServiceApplications").child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                String status = snapshot.child("status").getValue(String.class);
-                if ("completed".equalsIgnoreCase(status) || "approved".equalsIgnoreCase(status)) {
-                    loadFragment(new UserBillingFragment(), false);
-                } else if (snapshot.exists()) {
-                    navigateToReceipt(snapshot);
-                } else {
-                    // Load the FORM (user_dashboard.xml) for new users
-                    loadFragment(new UserDashboardFragment(), false);
-                }
-                toggleSystemUI(true);
-            }
-            @Override public void onCancelled(@NonNull DatabaseError error) {}
-        });
-    }
-
 
     private void navigateToReceipt(DataSnapshot snapshot) {
         Intent intent = new Intent(MainActivity.this, UserApplicationReceiptActivity.class);
@@ -156,27 +201,17 @@ public class MainActivity extends AppCompatActivity {
 
     public void setupLayout(boolean subscriberMode) {
         this.isSubscriber = subscriberMode;
-        if (isSubscriber) {
-            setContentView(R.layout.activity_main_user);
-        } else {
-            setContentView(R.layout.activity_main);
-        }
+        setContentView(isSubscriber ? R.layout.activity_main_user : R.layout.activity_main);
 
         bottomNavigationView = findViewById(R.id.bottomNavigation);
-// Inside setupLayout(boolean subscriberMode)
         ivProfile = findViewById(R.id.ivProfile);
 
         if (ivProfile != null) {
             ivProfile.setOnClickListener(v -> {
                 if (isSubscriber) {
-                    // Load the Profile Dashboard for subscribers
                     loadFragment(new SubscriberProfileFragment(), true);
-                    // Optionally, highlight the profile tab in bottom nav
                     bottomNavigationView.setSelectedItemId(R.id.nav_sub_profile);
-                } else {
-                    // Keep logout for admins
-                    showLogoutDialog();
-                }
+                } else showLogoutDialog();
             });
         }
 
@@ -186,6 +221,18 @@ public class MainActivity extends AppCompatActivity {
                 int itemId = item.getItemId();
 
                 if (itemId == R.id.nav_dashboard || itemId == R.id.nav_sub_dashboard) {
+                    if (isSubscriber) {
+                        if ("completed".equalsIgnoreCase(applicationStatus)) {
+                            selectedFragment = new ClientDashboardFragment();
+                            toggleSystemUI(true);
+                        } else {
+                            selectedFragment = new UserDashboardFragment();
+                            toggleSystemUI(false); // HIDE UI if they click dashboard but are back at the form
+                        }
+                    } else {
+                        selectedFragment = new DashboardFragment();
+                        toggleSystemUI(true);
+                    }
                     selectedFragment = isSubscriber ? new ClientDashboardFragment() : new DashboardFragment();
                 } else if (itemId == R.id.nav_subscribers) {
                     selectedFragment = new SubscriberManagement();
@@ -197,56 +244,41 @@ public class MainActivity extends AppCompatActivity {
                     selectedFragment = new SubscriberProfileFragment();
                 }
 
-                if (selectedFragment != null) {
-                    loadFragment(selectedFragment, true);
-                }
+                if (selectedFragment != null) loadFragment(selectedFragment, true);
                 return true;
             });
         }
+        syncProfilePicture();
     }
 
-    /**
-     * UPDATED: Now displays the modern BottomSheet logout
-     */
     private void showLogoutDialog() {
-        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
         View view = getLayoutInflater().inflate(R.layout.layout_logout_bottom_sheet, null);
-        bottomSheetDialog.setContentView(view);
-
-        MaterialButton btnLogout = view.findViewById(R.id.btnLogout);
-        TextView tvCancel = view.findViewById(R.id.tvCancel);
-
-        tvCancel.setOnClickListener(v -> bottomSheetDialog.dismiss());
-
-        btnLogout.setOnClickListener(v -> {
+        dialog.setContentView(view);
+        view.findViewById(R.id.tvCancel).setOnClickListener(v -> dialog.dismiss());
+        ((MaterialButton)view.findViewById(R.id.btnLogout)).setOnClickListener(v -> {
             getSharedPreferences("UserSession", MODE_PRIVATE).edit().clear().apply();
             FirebaseAuth.getInstance().signOut();
-
             Intent intent = new Intent(MainActivity.this, WelcomeActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
-            bottomSheetDialog.dismiss();
+            dialog.dismiss();
             finish();
         });
-
-        bottomSheetDialog.show();
+        dialog.show();
     }
 
     public void toggleSystemUI(boolean show) {
         int visibility = show ? View.VISIBLE : View.GONE;
         if (bottomNavigationView != null) bottomNavigationView.setVisibility(visibility);
         View headerLayout = findViewById(R.id.headerLayout);
-        if (headerLayout != null) {
-            headerLayout.setVisibility(visibility);
-        }
+        if (headerLayout != null) headerLayout.setVisibility(visibility);
         if (ivProfile != null) ivProfile.setVisibility(visibility);
     }
 
     private void loadFragment(Fragment fragment, boolean animate) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        if (animate) {
-            transaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
-        }
+        if (animate) transaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
         transaction.replace(R.id.fragment_container, fragment);
         transaction.commit();
     }

@@ -27,14 +27,22 @@ public class UserTermsFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.user_terms, container, false);
+        return inflater.inflate(R.layout.user_terms, container, false);
+    }
 
-        // 1. Initialize Views
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // FIX: Keep Header and Nav Bar hidden on Terms screen
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).toggleSystemUI(false);
+        }
+
         cbAgree = view.findViewById(R.id.cbAgree);
         btnBack = view.findViewById(R.id.btnBack);
         btnAgreeSubmit = view.findViewById(R.id.btnAgreeSubmit);
 
-        // 2. Initial State (Button disabled until checkbox is checked)
         btnAgreeSubmit.setEnabled(false);
         btnAgreeSubmit.setAlpha(0.5f);
 
@@ -43,35 +51,20 @@ public class UserTermsFragment extends Fragment {
             btnAgreeSubmit.setAlpha(isChecked ? 1.0f : 0.5f);
         });
 
-        // 3. Navigation Listeners
-        btnBack.setOnClickListener(v -> {
-            if (getParentFragmentManager() != null) {
-                getParentFragmentManager().popBackStack();
-            }
-        });
-
+        btnBack.setOnClickListener(v -> getParentFragmentManager().popBackStack());
         btnAgreeSubmit.setOnClickListener(v -> performFinalSubmission());
-
-        return view;
     }
 
     private void performFinalSubmission() {
         Bundle bundle = getArguments();
+        if (bundle == null) return;
 
-        // DEBUG: If this shows up, the problem is in UserDashboardFragment (data not sent)
-        if (bundle == null) {
-            Toast.makeText(getContext(), "Error: Application data missing!", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        btnAgreeSubmit.setEnabled(false); // Prevent double submission
+        btnAgreeSubmit.setEnabled(false);
         btnAgreeSubmit.setText("Submitting...");
 
-        // 1. Generate Application ID and Date
         String appId = "SOL-2026-" + (int)(Math.random() * 900000 + 100000);
         String dateIssued = new java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.getDefault()).format(new java.util.Date());
 
-        // 2. Prepare Data for Firebase
         Map<String, Object> appData = new HashMap<>();
         appData.put("applicationId", appId);
         appData.put("date", dateIssued);
@@ -83,35 +76,24 @@ public class UserTermsFragment extends Fragment {
         appData.put("status", "pending");
 
         String uid = FirebaseAuth.getInstance().getUid();
-
-        if (uid == null) {
-            Toast.makeText(getContext(), "User not logged in!", Toast.LENGTH_SHORT).show();
-            return;
+        if (uid != null) {
+            FirebaseDatabase.getInstance("https://solusyon-isp-default-rtdb.asia-southeast1.firebasedatabase.app/")
+                    .getReference("ServiceApplications")
+                    .child(uid)
+                    .setValue(appData)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            Intent intent = new Intent(getContext(), UserApplicationReceiptActivity.class);
+                            intent.putExtras(bundle);
+                            intent.putExtra("appId", appId);
+                            intent.putExtra("date", dateIssued);
+                            startActivity(intent);
+                            if (getActivity() != null) getActivity().finish();
+                        } else {
+                            btnAgreeSubmit.setEnabled(true);
+                            btnAgreeSubmit.setText("AGREE AND SUBMIT");
+                        }
+                    });
         }
-
-        // 3. Save to Firebase
-        FirebaseDatabase.getInstance("https://solusyon-isp-default-rtdb.asia-southeast1.firebasedatabase.app/")
-                .getReference("ServiceApplications")
-                .child(uid)
-                .setValue(appData)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        // 4. Launch Receipt Activity
-                        Intent intent = new Intent(getContext(), UserApplicationReceiptActivity.class);
-                        intent.putExtras(bundle); // Pass original data
-                        intent.putExtra("appId", appId); // Pass generated ID
-                        intent.putExtra("date", dateIssued); // Pass generated Date
-                        startActivity(intent);
-
-                        // Close the host Activity so they can't go back to the terms
-                        if (getActivity() != null) getActivity().finish();
-                    } else {
-                        btnAgreeSubmit.setEnabled(true);
-                        btnAgreeSubmit.setText("AGREE AND SUBMIT");
-
-                        String error = task.getException() != null ? task.getException().getMessage() : "Unknown Error";
-                        Toast.makeText(getContext(), "Error: " + error, Toast.LENGTH_LONG).show();
-                    }
-                });
     }
 }

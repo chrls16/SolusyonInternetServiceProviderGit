@@ -29,8 +29,28 @@
             android:layout_weight="1"
             android:layout_marginStart="16dp"
             android:orientation="vertical">
-            <TextView android:id="@+id/tvName" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#1E293B" android:textStyle="bold" />
-            <TextView android:id="@+id/tvAccount" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#64748B" android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/tvName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#1E293B"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvAccount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#64748B"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/tvDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#64748B"
+                android:textSize="11sp" />
+
         </LinearLayout>
 
         <LinearLayout
@@ -38,8 +58,28 @@
             android:layout_height="wrap_content"
             android:gravity="end"
             android:orientation="vertical">
-            <TextView android:id="@+id/tvPlan" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#1E293B" android:textAlignment="viewEnd"/>
-            <TextView android:id="@+id/tvPlanType" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#64748B" android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/tvPlan"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#1E293B"
+                android:textAlignment="viewEnd"/>
+
+            <TextView
+                android:id="@+id/tvPlanType"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#64748B"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/tvPrice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#2D62B5"
+                android:textStyle="bold"
+                android:textSize="14sp" />
         </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

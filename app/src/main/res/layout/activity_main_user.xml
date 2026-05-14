@@ -22,9 +22,9 @@
             android:id="@+id/ivMenuIcon"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:src="@drawable/ic_menu"
-            android:contentDescription="Menu Icon"
-            app:tint="@color/primary" />
+            android:src="@drawable/logo"
+            android:scaleType="centerInside"
+            android:contentDescription="Menu Icon" />
 
         <TextView
             android:id="@+id/tvSolusyonLogo"

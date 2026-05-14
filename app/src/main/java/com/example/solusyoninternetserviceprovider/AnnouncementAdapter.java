@@ -26,6 +26,8 @@ public class AnnouncementAdapter extends RecyclerView.Adapter<AnnouncementAdapte
         return new ViewHolder(v);
     }
 
+// Inside AnnouncementAdapter.java -> onBindViewHolder
+
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         AnnouncementModel item = list.get(position);
@@ -34,16 +36,29 @@ public class AnnouncementAdapter extends RecyclerView.Adapter<AnnouncementAdapte
         holder.tvTitle.setText(item.getTitle());
         holder.tvDesc.setText(item.getDescription());
         holder.tvTime.setText(item.getTimestamp());
-        holder.ivIcon.setImageResource(item.getIconRes());
 
-        int color = Color.parseColor(item.getColorHex());
-        holder.viewAccent.setBackgroundColor(color);
-        holder.tvCategory.setTextColor(color);
+        // 1. DYNAMIC ICON SELECTION
+        int iconRes = R.drawable.ic_info;
+        if ("WARNING".equalsIgnoreCase(item.getCategory())) {
+            iconRes = R.drawable.ic_warning;
+        } else if ("CRITICAL".equalsIgnoreCase(item.getCategory())) {
+            iconRes = R.drawable.ic_critical;
+        }
+        holder.ivIcon.setImageResource(iconRes);
 
-        // Lighten the background for the icon card
-        holder.cardIcon.setCardBackgroundColor(color);
-        holder.cardIcon.setAlpha(0.2f);
-        holder.ivIcon.setColorFilter(color);
+        // 2. STYLING
+        int themeColor = Color.parseColor(item.getColorHex());
+        holder.viewAccent.setBackgroundColor(themeColor);
+        holder.tvCategory.setTextColor(themeColor);
+
+        // FIX: Set a semi-transparent background color instead of setting alpha on the whole View
+        // This keeps the icon fully visible while the box stays light
+        int alphaColor = androidx.core.graphics.ColorUtils.setAlphaComponent(themeColor, 40); // 40 is approx 15% opacity
+        holder.cardIcon.setCardBackgroundColor(alphaColor);
+        holder.cardIcon.setAlpha(1.0f); // Reset view alpha to full
+
+        // Make the icon itself the sharp theme color
+        holder.ivIcon.setColorFilter(themeColor);
     }
 
     @Override

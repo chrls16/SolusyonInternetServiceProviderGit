@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?> <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -8,7 +7,6 @@
     android:background="@color/page_background"
     android:clipToPadding="false"
     android:clipChildren="false">
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -17,9 +15,10 @@
         android:clipToPadding="false"
         android:clipChildren="false">
 
+        <!-- Network Logistics Overview -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardLogistics"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="24dp"
             android:layout_marginTop="32dp"
@@ -27,7 +26,9 @@
             app:cardCornerRadius="12dp"
             app:cardElevation="2dp"
             app:strokeWidth="0dp"
-            tools:ignore="MissingConstraints">
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"> <!-- FIXED: Added Start/End constraints -->
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -100,12 +101,14 @@
                     app:tint="#E0E0E0" />
 
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
                     android:orientation="horizontal"
                     android:weightSum="2"
-                    app:layout_constraintTop_toBottomOf="@id/tvLogisticsStatus">
+                    app:layout_constraintTop_toBottomOf="@id/tvLogisticsStatus"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"> <!-- FIXED: Added Start/End constraints -->
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnDispatch"
@@ -131,13 +134,13 @@
                         app:cornerRadius="8dp"
                         app:elevation="0dp" />
                 </LinearLayout>
-
             </androidx.constraintlayout.widget.ConstraintLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Active Subscriber Chart Card -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardSubscribers"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="24dp"
             android:layout_marginTop="16dp"
@@ -145,7 +148,9 @@
             app:cardCornerRadius="12dp"
             app:cardElevation="2dp"
             app:strokeWidth="0dp"
-            app:layout_constraintTop_toBottomOf="@id/cardLogistics">
+            app:layout_constraintTop_toBottomOf="@id/cardLogistics"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"> <!-- FIXED: Added Start/End constraints -->
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -218,12 +223,11 @@
                         android:layout_weight="1"
                         android:gravity="bottom|center_horizontal"
                         android:orientation="vertical">
-
                         <View
+                            android:id="@+id/barBasic"
                             android:layout_width="40dp"
                             android:layout_height="100dp"
                             android:background="@color/primary_light" />
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -240,12 +244,11 @@
                         android:layout_weight="1"
                         android:gravity="bottom|center_horizontal"
                         android:orientation="vertical">
-
                         <View
+                            android:id="@+id/barStandard"
                             android:layout_width="40dp"
                             android:layout_height="140dp"
                             android:background="@color/primary" />
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -262,12 +265,11 @@
                         android:layout_weight="1"
                         android:gravity="bottom|center_horizontal"
                         android:orientation="vertical">
-
                         <View
+                            android:id="@+id/barPro"
                             android:layout_width="40dp"
                             android:layout_height="180dp"
                             android:background="@color/primary" />
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -277,15 +279,86 @@
                             android:textSize="10sp"
                             android:textStyle="bold" />
                     </LinearLayout>
-
                 </LinearLayout>
-
             </androidx.constraintlayout.widget.ConstraintLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <com.google.android.material.card.MaterialCardView
+        <!-- Admin Action Buttons -->
+        <LinearLayout
             android:id="@+id/cardPayments"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="24dp"
+            android:layout_marginTop="16dp"
+            android:paddingBottom="12dp"
+            android:orientation="horizontal"
+            android:weightSum="3"
+            app:layout_constraintTop_toBottomOf="@id/cardSubscribers"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:clipChildren="false"
+            android:clipToPadding="false"> <!-- FIXED: Added Start/End constraints -->
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCreateAnnouncement"
+                android:layout_width="0dp"
+                android:layout_height="64dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:text="Add\nAnnounce"
+                android:textAllCaps="false"
+                android:textSize="11sp"
+                android:paddingHorizontal="4dp"
+                app:backgroundTint="@color/primary"
+                app:cornerRadius="12dp"
+                app:elevation="4dp"
+                app:icon="@drawable/ic_announcement"
+                app:iconGravity="top"
+                app:iconPadding="4dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAddStaff"
+                android:layout_width="0dp"
+                android:layout_height="64dp"
+                android:layout_marginHorizontal="4dp"
+                android:layout_weight="1"
+                android:text="Add\nStaff"
+                android:textAllCaps="false"
+                android:textSize="11sp"
+                android:paddingHorizontal="4dp"
+                android:textColor="@color/primary"
+                app:backgroundTint="@color/primary_light"
+                app:cornerRadius="12dp"
+                app:elevation="4dp"
+                app:icon="@drawable/ic_person_add"
+                app:iconGravity="top"
+                app:iconPadding="4dp"
+                app:iconTint="@color/primary" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAddPlan"
+                android:layout_width="0dp"
+                android:layout_height="64dp"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:text="Add\nPlan"
+                android:textAllCaps="false"
+                android:textSize="11sp"
+                android:paddingHorizontal="4dp"
+                android:textColor="@color/primary"
+                app:backgroundTint="@color/primary_light"
+                app:cornerRadius="12dp"
+                app:elevation="4dp"
+                app:icon="@drawable/ic_add"
+                app:iconGravity="top"
+                app:iconPadding="4dp"
+                app:iconTint="@color/primary" />
+        </LinearLayout>
+
+        <!-- Staff List Management Card Button -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardStaffList"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="24dp"
             android:layout_marginTop="16dp"
@@ -293,77 +366,68 @@
             app:cardCornerRadius="12dp"
             app:cardElevation="2dp"
             app:strokeWidth="0dp"
-            app:layout_constraintTop_toBottomOf="@id/cardSubscribers">
+            app:layout_constraintTop_toBottomOf="@id/cardPayments"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
-            <LinearLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
                 android:padding="20dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Subscriber Payments Due"
-                    android:textColor="#1C1C1C"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                <ImageView
+                    android:id="@+id/ivStaffListIcon"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/ic_people"
+                    app:tint="@color/primary"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
 
                 <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:layout_marginTop="16dp"
-                    android:background="@drawable/bg_tab_container"
-                    android:orientation="horizontal"
-                    android:weightSum="3">
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:orientation="vertical"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/ivArrow"
+                    app:layout_constraintStart_toEndOf="@id/ivStaffListIcon"
+                    app:layout_constraintTop_toTopOf="parent">
 
                     <TextView
-                        android:id="@+id/tabLate"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:background="@drawable/bg_tab_selected"
-                        android:gravity="center"
-                        android:text="LATE"
-                        android:textColor="@color/white"
-                        android:textSize="12sp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Staff List Management"
+                        android:textColor="#1C1C1C"
+                        android:textSize="16sp"
                         android:textStyle="bold" />
 
                     <TextView
-                        android:id="@+id/tabToday"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:text="TODAY"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="View and manage personnel directory"
                         android:textColor="@color/neutral"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tabTomorrow"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:text="TOMORROW"
-                        android:textColor="@color/neutral"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:textSize="12sp" />
                 </LinearLayout>
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvPaymentsDue"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:nestedScrollingEnabled="false" />
+                <ImageView
+                    android:id="@+id/ivArrow"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="@color/neutral"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-            </LinearLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
         </com.google.android.material.card.MaterialCardView>
+
+        <!-- Events Schedule Card -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardEvents"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="24dp"
             android:layout_marginTop="16dp"
@@ -372,7 +436,9 @@
             app:cardCornerRadius="12dp"
             app:cardElevation="2dp"
             app:strokeWidth="0dp"
-            app:layout_constraintTop_toBottomOf="@id/cardPayments">
+            app:layout_constraintTop_toBottomOf="@id/cardStaffList"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"> <!-- FIXED: Added Start/End constraints -->
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -440,7 +506,6 @@
                     android:layout_marginTop="24dp"
                     android:orientation="horizontal"
                     android:weightSum="7">
-
                     <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="S" android:textColor="@color/neutral" android:textSize="12sp" android:textStyle="bold" />
                     <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="M" android:textColor="@color/neutral" android:textSize="12sp" android:textStyle="bold" />
                     <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="T" android:textColor="@color/neutral" android:textSize="12sp" android:textStyle="bold" />
@@ -467,5 +532,4 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 </ScrollView>

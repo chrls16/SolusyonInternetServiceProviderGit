@@ -33,21 +33,18 @@ public class DashboardFragment extends Fragment {
 
     private TextView tvCurrentMonthYear, tvLogisticsCount;
     private ImageView btnPrevMonth, btnNextMonth;
-    private RecyclerView rvCalendarGrid, rvEvents, rvPaymentsDue;
-    private MaterialButton btnViewList;
-
-    private PaymentDueAdapter paymentAdapter;
-    private List<PaymentDue> paymentList;
+    private RecyclerView rvCalendarGrid, rvEvents;
+    private MaterialButton btnViewList, btnCreateAnnouncement, btnAddStaff;
+    private View cardStaffList;
 
     private EventAdapter eventAdapter;
     private List<EventSchedule> eventList;
     private List<EventSchedule> displayedEvents;
 
     private Calendar calendar;
-    private DatabaseReference paymentRef, eventRef, applicationRef;
+    private DatabaseReference eventRef, applicationRef;
 
-    // Store listeners so we can remove them when the fragment is destroyed
-    private ValueEventListener eventListener, paymentListener, applicationListener;
+    private ValueEventListener eventListener, applicationListener;
 
     public DashboardFragment() {}
 
@@ -71,7 +68,6 @@ public class DashboardFragment extends Fragment {
 
         // 1. Initialize DB
         FirebaseDatabase database = FirebaseDatabase.getInstance("https://solusyon-isp-default-rtdb.asia-southeast1.firebasedatabase.app");
-        paymentRef = database.getReference("PaymentDue/Late");
         eventRef = database.getReference("EventSchedule/Upcoming");
         applicationRef = database.getReference("ServiceApplications");
 
@@ -83,12 +79,13 @@ public class DashboardFragment extends Fragment {
         btnViewList = view.findViewById(R.id.btnViewList);
         rvCalendarGrid = view.findViewById(R.id.rvCalendarGrid);
         rvEvents = view.findViewById(R.id.rvEvents);
-        rvPaymentsDue = view.findViewById(R.id.rvPaymentsDue);
+        btnCreateAnnouncement = view.findViewById(R.id.btnCreateAnnouncement);
+        btnAddStaff = view.findViewById(R.id.btnAddStaff);
+        cardStaffList = view.findViewById(R.id.cardStaffList);
 
         // 3. Initialize Lists
         eventList = new ArrayList<>();
         displayedEvents = new ArrayList<>();
-        paymentList = new ArrayList<>();
 
         // 4. Calendar Setup
         calendar = Calendar.getInstance();
@@ -112,19 +109,44 @@ public class DashboardFragment extends Fragment {
             }
         });
 
-        // 6. Adapters Setup
+        if (btnCreateAnnouncement != null) {
+            btnCreateAnnouncement.setOnClickListener(v -> {
+                getParentFragmentManager().beginTransaction()
+                        .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+                        .replace(R.id.fragment_container, new CreateAnnouncementFragment())
+                        .addToBackStack(null)
+                        .commit();
+            });
+        }
+
+        if (btnAddStaff != null) {
+            btnAddStaff.setOnClickListener(v -> {
+                if (getActivity() != null) {
+                    Intent intent = new Intent(getActivity(), AddStaff.class);
+                    startActivity(intent);
+                }
+            });
+        }
+
+        // 6. Staff List Navigation
+        if (cardStaffList != null) {
+            cardStaffList.setOnClickListener(v -> {
+                getParentFragmentManager().beginTransaction()
+                        .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+                        .replace(R.id.fragment_container, new StaffListFragment())
+                        .addToBackStack(null)
+                        .commit();
+            });
+        }
+
+        // 7. Adapters Setup
         if (getContext() != null) {
             rvEvents.setLayoutManager(new LinearLayoutManager(getContext()));
             eventAdapter = new EventAdapter(displayedEvents);
             rvEvents.setAdapter(eventAdapter);
-
-            rvPaymentsDue.setLayoutManager(new LinearLayoutManager(getContext()));
-            paymentAdapter = new PaymentDueAdapter(paymentList);
-            rvPaymentsDue.setAdapter(paymentAdapter);
         }
 
-        // 7. Fetch Data
-        fetchPaymentsData();
+        // 8. Fetch Data
         fetchEventsData();
         fetchApplicationCount();
     }
@@ -198,7 +220,7 @@ public class DashboardFragment extends Fragment {
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     EventSchedule event = ds.getValue(EventSchedule.class);
                     if (event != null) {
-                        event.setKey(ds.getKey()); // Store the Firebase key
+                        event.setKey(ds.getKey());
                         eventList.add(event);
                     }
                 }
@@ -209,28 +231,10 @@ public class DashboardFragment extends Fragment {
         eventRef.addValueEventListener(eventListener);
     }
 
-    private void fetchPaymentsData() {
-        paymentListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (!isAdded()) return;
-                paymentList.clear();
-                for (DataSnapshot ds : snapshot.getChildren()) {
-                    PaymentDue payment = ds.getValue(PaymentDue.class);
-                    if (payment != null) paymentList.add(payment);
-                }
-                if (paymentAdapter != null) paymentAdapter.notifyDataSetChanged();
-            }
-            @Override public void onCancelled(@NonNull DatabaseError error) {}
-        };
-        paymentRef.addValueEventListener(paymentListener);
-    }
-
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         if (eventRef != null && eventListener != null) eventRef.removeEventListener(eventListener);
-        if (paymentRef != null && paymentListener != null) paymentRef.removeEventListener(paymentListener);
         if (applicationRef != null && applicationListener != null) applicationRef.removeEventListener(applicationListener);
     }
 }

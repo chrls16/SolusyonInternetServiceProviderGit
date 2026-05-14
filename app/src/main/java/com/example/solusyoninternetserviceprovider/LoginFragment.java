@@ -1,6 +1,6 @@
 package com.example.solusyoninternetserviceprovider;
 
-import android.content.Intent; // <--- ADD THIS LINE
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
@@ -30,25 +30,19 @@ import com.google.firebase.database.ValueEventListener;
 
 public class LoginFragment extends Fragment {
 
-    private TextInputEditText etUsername;
-    private TextInputEditText etPassword;
+    private TextInputEditText etUsername, etPassword;
     private CheckBox cbTrustDevice;
     private MaterialButton btnLogin;
     private TextView tvForgotPassword;
-    private View viewSuccess;
-    private View viewError;
+    private View viewSuccess, viewError;
 
-    // Firebase Auth & Database
     private FirebaseAuth mAuth;
     private DatabaseReference mDatabase;
 
-    public LoginFragment() {
-        // Required empty public constructor
-    }
+    public LoginFragment() {}
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_login, container, false);
     }
 
@@ -56,14 +50,11 @@ public class LoginFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Hide the Header and Bottom Navigation Bar on the Login Screen
         toggleSystemUI(false);
 
-        // Initialize Firebase
         mAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance("https://solusyon-isp-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference();
 
-        // Initialize views
         etUsername = view.findViewById(R.id.etUsername);
         etPassword = view.findViewById(R.id.etPassword);
         cbTrustDevice = view.findViewById(R.id.cbTrustDevice);
@@ -72,7 +63,6 @@ public class LoginFragment extends Fragment {
         viewSuccess = view.findViewById(R.id.viewSuccess);
         viewError = view.findViewById(R.id.viewError);
 
-        // REMEMBER ME: Load saved credentials
         SharedPreferences prefs = requireActivity().getSharedPreferences("LoginPrefs", 0);
         if (prefs.getBoolean("rememberMe", false)) {
             etUsername.setText(prefs.getString("email", ""));
@@ -80,12 +70,8 @@ public class LoginFragment extends Fragment {
             cbTrustDevice.setChecked(true);
         }
 
-        // Set click listeners
         btnLogin.setOnClickListener(v -> handleLogin());
-
-        tvForgotPassword.setOnClickListener(v -> {
-            Toast.makeText(requireContext(), "Password reset feature coming soon", Toast.LENGTH_SHORT).show();
-        });
+        tvForgotPassword.setOnClickListener(v -> navigateToFragment(new ForgotPasswordFragment(), false));
     }
 
     private void handleLogin() {
@@ -104,46 +90,30 @@ public class LoginFragment extends Fragment {
         btnLogin.setEnabled(false);
         btnLogin.setText("Verifying...");
 
-        // Check if input is an Email or a Username
         if (input.contains("@")) {
-            // It's an Email - Login directly
             performFirebaseLogin(input, password, isTrusted);
         } else {
-            // It's a Username - Look up the email in the database first
             lookupEmailByUsername(input, password, isTrusted);
         }
     }
 
     private void lookupEmailByUsername(String username, String password, boolean isTrusted) {
-        // Search the "users" node for a child where "username" matches the input
         mDatabase.child("users").orderByChild("username").equalTo(username)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        if (snapshot.exists() && snapshot.getChildrenCount() > 0) {
-                            // Username found! Get the email associated with it
+                        if (snapshot.exists()) {
                             String email = "";
                             for (DataSnapshot child : snapshot.getChildren()) {
                                 email = child.child("email").getValue(String.class);
                             }
-
-                            if (email != null && !email.isEmpty()) {
-                                performFirebaseLogin(email, password, isTrusted);
-                            }
+                            if (email != null) performFirebaseLogin(email, password, isTrusted);
                         } else {
-                            // Username doesn't exist
-                            btnLogin.setEnabled(true);
-                            btnLogin.setText("Sign in to Dashboard");
-                            viewError.setVisibility(View.VISIBLE);
+                            resetLoginButton();
                             Toast.makeText(getContext(), "Username not found", Toast.LENGTH_SHORT).show();
                         }
                     }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        btnLogin.setEnabled(true);
-                        Toast.makeText(getContext(), "Database Error", Toast.LENGTH_SHORT).show();
-                    }
+                    @Override public void onCancelled(@NonNull DatabaseError error) { resetLoginButton(); }
                 });
     }
 
@@ -157,8 +127,7 @@ public class LoginFragment extends Fragment {
                             checkUserRole(user.getUid());
                         }
                     } else {
-                        btnLogin.setEnabled(true);
-                        btnLogin.setText("Sign in to Dashboard");
+                        resetLoginButton();
                         viewError.setVisibility(View.VISIBLE);
                     }
                 });
@@ -169,43 +138,38 @@ public class LoginFragment extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
-                    String name = snapshot.child("fullName").getValue(String.class);
-                    if (name == null || name.isEmpty()) {
-                        name = snapshot.child("username").getValue(String.class);
-                    }
-
                     String role = snapshot.child("role").getValue(String.class);
                     if (role != null) role = role.toLowerCase().trim();
 
+                    String name = snapshot.child("fullName").getValue(String.class);
+                    if (name == null) name = snapshot.child("username").getValue(String.class);
+
                     SharedPreferences userSession = requireActivity().getSharedPreferences("UserSession", 0);
-                    SharedPreferences.Editor editor = userSession.edit();
-                    editor.putString("userName", name);
-                    editor.putString("userRole", role);
-                    editor.apply();
+                    userSession.edit().putString("userName", name).putString("userRole", role).apply();
 
                     if ("subscriber".equals(role)) {
-                        // Switch MainActivity to Subscriber layout before loading subscriber fragments
+                        // FIX: Force switch to Subscriber Layout
                         if (getActivity() instanceof MainActivity) {
                             ((MainActivity) getActivity()).setupLayout(true);
                         }
                         checkApplicationStatus(uid);
-                    } else if ("admin".equals(role)) {
-                        navigateToFragment(new DashboardFragment(), true);
                     } else {
+                        // FIX: Force switch to Admin Layout
+                        if (getActivity() instanceof MainActivity) {
+                            ((MainActivity) getActivity()).setupLayout(false);
+                        }
                         navigateToFragment(new DashboardFragment(), true);
                     }
                 } else {
+                    resetLoginButton();
                     Toast.makeText(getContext(), "User profile not found.", Toast.LENGTH_SHORT).show();
-                    btnLogin.setEnabled(true);
                 }
             }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                btnLogin.setEnabled(true);
-            }
+            @Override public void onCancelled(@NonNull DatabaseError error) { resetLoginButton(); }
         });
     }
+
+    // Update this method in LoginFragment.java
 
     private void checkApplicationStatus(String uid) {
         mDatabase.child("ServiceApplications").child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -213,87 +177,78 @@ public class LoginFragment extends Fragment {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
                     String status = snapshot.child("status").getValue(String.class);
-
-                    // 1. IF STATUS IS COMPLETED OR APPROVED: Show the Billing/Dashboard
-                    if ("completed".equalsIgnoreCase(status) || "approved".equalsIgnoreCase(status)) {
-                        // This takes the user to their active account view
-                        navigateToFragment(new UserBillingFragment(), true);
-
-                        // FIX: Sync the Bottom Navigation Bar to "Billing"
-                        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                            if (getActivity() instanceof MainActivity) {
-                                BottomNavigationView bnv = getActivity().findViewById(R.id.bottomNavigation);
-                                if (bnv != null) bnv.setSelectedItemId(R.id.nav_sub_billing);
-                            }
-                        }, 850); // Matches the navigation delay
+                    if (getActivity() instanceof MainActivity) {
+                        ((MainActivity) getActivity()).applicationStatus = status;
                     }
-                    // 2. IF STATUS IS STILL PENDING: Show the Digital Receipt
-                    else {
+
+                    if ("completed".equalsIgnoreCase(status)) {
+                        navigateToFragment(new ClientDashboardFragment(), true); // true = SHOW UI
+                    } else if ("approved".equalsIgnoreCase(status)) {
+                        navigateToFragment(new UserBillingFragment(), true); // true = SHOW UI
+                        updateBottomNav(R.id.nav_sub_billing);
+                    } else {
+                        // Handle pending receipt...
                         viewSuccess.setVisibility(View.VISIBLE);
                         new Handler(Looper.getMainLooper()).postDelayed(() -> {
                             if (isAdded()) {
                                 Intent intent = new Intent(getActivity(), UserApplicationReceiptActivity.class);
                                 intent.putExtra("appId", snapshot.child("applicationId").getValue(String.class));
-                                intent.putExtra("date", snapshot.child("date").getValue(String.class));
                                 intent.putExtra("fullName", snapshot.child("fullName").getValue(String.class));
                                 intent.putExtra("phone", snapshot.child("phone").getValue(String.class));
                                 intent.putExtra("plan", snapshot.child("plan").getValue(String.class));
                                 intent.putExtra("payment", snapshot.child("payment").getValue(String.class));
-
+                                intent.putExtra("date", snapshot.child("date").getValue(String.class));
                                 startActivity(intent);
-                                if (getActivity() != null) getActivity().finish();
+                                getActivity().finish();
                             }
                         }, 800);
                     }
                 } else {
-                    // NO APPLICATION FOUND: Take them to the application form
-                    navigateToFragment(new UserDashboardFragment(), true);
-
-                    // FIX: Ensure Dashboard tab is highlighted
-                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                        if (getActivity() instanceof MainActivity) {
-                            BottomNavigationView bnv = getActivity().findViewById(R.id.bottomNavigation);
-                            if (bnv != null) bnv.setSelectedItemId(R.id.nav_sub_dashboard);
-                        }
-                    }, 850);
+                    // No Application -> Go to Form
+                    navigateToFragment(new UserDashboardFragment(), false);
+                    updateBottomNav(R.id.nav_sub_dashboard);
                 }
             }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                btnLogin.setEnabled(true);
-            }
+            @Override public void onCancelled(@NonNull DatabaseError error) { resetLoginButton(); }
         });
     }
 
-    private void navigateToFragment(Fragment fragment, boolean showAdminUI) {
+    private void updateBottomNav(int itemId) {
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            if (getActivity() instanceof MainActivity) {
+                BottomNavigationView bnv = getActivity().findViewById(R.id.bottomNavigation);
+                if (bnv != null) bnv.setSelectedItemId(itemId);
+            }
+        }, 850);
+    }
+
+    private void navigateToFragment(Fragment fragment, boolean showUI) {
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             if (isAdded()) {
-                toggleSystemUI(showAdminUI);
-                if (getActivity() instanceof MainActivity) {
-                    ((MainActivity) getActivity()).syncWelcomeHeader();
-                }
+                toggleSystemUI(showUI);
+                if (getActivity() instanceof MainActivity) ((MainActivity) getActivity()).syncWelcomeHeader();
                 FragmentTransaction transaction = requireActivity().getSupportFragmentManager().beginTransaction();
                 transaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
                 transaction.replace(R.id.fragment_container, fragment);
+                transaction.addToBackStack(null);
                 transaction.commit();
             }
         }, 800);
     }
 
     private void toggleSystemUI(boolean show) {
-        if (getActivity() instanceof MainActivity) {
-            ((MainActivity) getActivity()).toggleSystemUI(show);
-        }
+        if (getActivity() instanceof MainActivity) ((MainActivity) getActivity()).toggleSystemUI(show);
+    }
+
+    private void resetLoginButton() {
+        btnLogin.setEnabled(true);
+        btnLogin.setText("Sign in to Dashboard");
     }
 
     private void saveLoginPrefs(String email, String password, boolean remember) {
-        SharedPreferences loginPrefs = requireActivity().getSharedPreferences("LoginPrefs", 0);
-        SharedPreferences.Editor editor = loginPrefs.edit();
+        SharedPreferences.Editor editor = requireActivity().getSharedPreferences("LoginPrefs", 0).edit();
         if (remember) {
-            editor.putString("email", email);
-            editor.putString("password", password);
-            editor.putBoolean("rememberMe", true);
+            editor.putString("email", email).putString("password", password).putBoolean("rememberMe", true);
         } else {
             editor.clear();
         }

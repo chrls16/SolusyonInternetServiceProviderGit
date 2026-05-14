@@ -3,6 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
@@ -29,7 +32,22 @@
 
         <activity
             android:name=".MainActivity"
-            android:exported="false" />
+            android:exported="true"> <!-- Changed to true -->
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:host="solusyon-isp-default-rtdb.firebaseapp.com"
+                    android:scheme="https" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".AddStaff"
+            android:exported="false"
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".WelcomeActivity"
@@ -47,12 +65,6 @@
             android:name=".PendingStatusActivity"
             android:exported="false" />
 
-
     </application>
-
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
 </manifest>

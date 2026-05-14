@@ -86,25 +86,26 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <TextView android:id="@+id/labelPlan"
+                <TextView
+                    android:id="@+id/labelPlan"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="CURRENT PLAN"
                     android:textColor="#94A3B8"
                     android:textSize="11sp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
-                    android:text="ACTIVE"
                     android:background="@drawable/bg_badge"
                     android:paddingHorizontal="12dp"
                     android:paddingVertical="4dp"
+                    android:text="ACTIVE"
                     android:textColor="@color/billing_card_bg"
                     android:textSize="10sp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvPlanTitle"
@@ -115,7 +116,7 @@
                     android:text="Enterprise Fiber"
                     android:textColor="@color/white"
                     android:textSize="28sp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold" />
             </RelativeLayout>
 
             <TextView
@@ -131,15 +132,15 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="24dp">
+                android:layout_marginTop="24dp"
+                android:orientation="horizontal">
 
                 <include
                     layout="@layout/item_mini_stat"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="8dp"/>
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1" />
 
                 <include
                     layout="@layout/item_mini_stat"
@@ -153,7 +154,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Recent Activity"
+            android:text="Payment Transaction"
             android:textSize="20sp"
             android:textStyle="bold"
             android:layout_marginTop="32dp"
