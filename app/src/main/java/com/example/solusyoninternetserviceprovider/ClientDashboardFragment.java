@@ -88,38 +88,43 @@ public class ClientDashboardFragment extends Fragment {
         });
     }
 
-    private void updateUIByPlan(String planName, String date) {
-        if (date != null) {
-            tvDate.setText("Availed on " + date);
-        }
+    private void updateUIByPlan(String planName, String date) { if (date != null) { tvDate.setText("Availed on " + date); } tvPlanName.setText(planName); // Set title immediately
+// Fetch details (price/speed) from the Plans node
+        mDatabase.child("Plans").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                boolean found = false;
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    String dbPlanName = ds.child("name").getValue(String.class);
+                    if (dbPlanName != null && dbPlanName.equalsIgnoreCase(planName)) {
+                        // Update UI with real data from Admin Panel
+                        String price = ds.child("price").getValue(String.class);
+                        String speed = ds.child("speed").getValue(String.class);
+                        String upload = ds.child("upload").getValue(String.class);
 
-        // Logic to set price and speed based on the plan type
-        if (planName.equalsIgnoreCase("Basic")) {
-            tvPlanName.setText("Basic Home Fiber");
-            tvPlanPrice.setText("₱ 499.00");
-            tvDownloadSpeed.setText("25 Mbps");
-            tvUploadSpeed.setText("25 Mbps");
-        } else if (planName.equalsIgnoreCase("Standard")) {
-            tvPlanName.setText("Standard Plus Fiber");
-            tvPlanPrice.setText("₱ 699.00");
-            tvDownloadSpeed.setText("50 Mbps");
-            tvUploadSpeed.setText("50 Mbps");
-        } else if (planName.equalsIgnoreCase("Pro")) {
-            tvPlanName.setText("Enterprise Pro Fiber");
-            tvPlanPrice.setText("₱ 999.00");
-            tvDownloadSpeed.setText("100 Mbps");
-            tvUploadSpeed.setText("100 Mbps");
-        } else {
-            // Fallback for custom plans or unexpected values
-            tvPlanName.setText(planName);
-        }
+                        tvPlanPrice.setText("₱ " + price);
+                        tvDownloadSpeed.setText(speed + " Mbps");
+                        tvUploadSpeed.setText(upload + " Mbps");
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    tvPlanPrice.setText("₱ 0.00");
+                    tvDownloadSpeed.setText("0 Mbps");
+                    tvUploadSpeed.setText("0 Mbps");
+                }
+            }
+
+            @Override public void onCancelled(@NonNull DatabaseError error) {}
+        });
     }
 
     private void setupTransactions() {
         rvTransactions.setLayoutManager(new LinearLayoutManager(getContext()));
         List<TransactionModel> list = new ArrayList<>();
-        list.add(new TransactionModel("Invoice #SOL-9921", "Nov 01, 2023 • Paid via Visa", "$89.00"));
-        list.add(new TransactionModel("Invoice #SOL-8845", "Oct 01, 2023 • Paid via Visa", "$89.00"));
+        list.add(new TransactionModel("Invoice #SOL-9921", "Nov 01, 2023 • Paid via Visa", "₱89.00"));
+        list.add(new TransactionModel("Invoice #SOL-8845", "Oct 01, 2023 • Paid via Visa", "₱89.00"));
 
         TransactionAdapter adapter = new TransactionAdapter(list);
         rvTransactions.setAdapter(adapter);

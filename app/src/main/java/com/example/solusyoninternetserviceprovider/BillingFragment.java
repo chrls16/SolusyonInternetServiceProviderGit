@@ -1,9 +1,32 @@
 package com.example.solusyoninternetserviceprovider;
-import android.os.Bundle; import android.view.LayoutInflater; import android.view.View; import android.view.ViewGroup; import android.widget.ProgressBar; import android.widget.TextView;
-import androidx.annotation.NonNull; import androidx.annotation.Nullable; import androidx.core.content.ContextCompat; import androidx.fragment.app.Fragment; import androidx.recyclerview.widget.LinearLayoutManager; import androidx.recyclerview.widget.RecyclerView;
-import com.google.firebase.database.DataSnapshot; import com.google.firebase.database.DatabaseError; import com.google.firebase.database.DatabaseReference; import com.google.firebase.database.FirebaseDatabase; import com.google.firebase.database.ValueEventListener;
-import java.text.NumberFormat; import java.util.ArrayList; import java.util.List; import java.util.Locale;
+
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
 public class BillingFragment extends Fragment {
+
     private RecyclerView recyclerView;
     private BillingAdapter adapter;
     private List<BillingModel> fullList = new ArrayList<>();
@@ -37,7 +60,6 @@ public class BillingFragment extends Fragment {
         tabPaid = v.findViewById(R.id.tabPaid);
         tabPending = v.findViewById(R.id.tabPending);
 
-        // Stats in the top card (You may need to add these IDs to fragment_billing.xml)
         tvTotalCollected = v.findViewById(R.id.tvTotalCollected);
         progressBarCollected = v.findViewById(R.id.progressBarCollected);
 
@@ -56,26 +78,34 @@ public class BillingFragment extends Fragment {
                 long totalRequests = snapshot.getChildrenCount();
 
                 for (DataSnapshot ds : snapshot.getChildren()) {
+                    // 1. Get the Firebase Key (UID)
+                    String userId = ds.getKey();
+
                     String name = ds.child("fullName").getValue(String.class);
                     String appId = ds.child("applicationId").getValue(String.class);
                     String plan = ds.child("plan").getValue(String.class);
                     String status = ds.child("status").getValue(String.class);
 
-                    // 1. Determine Speed and Formatted Plan Name
                     String speed = "0Mbps";
                     String formattedPlan = "Unknown Plan";
                     if (plan != null) {
-                        if (plan.equalsIgnoreCase("Basic")) { speed = "25Mbps"; formattedPlan = "Basic Fiber"; }
-                        else if (plan.equalsIgnoreCase("Standard")) { speed = "50Mbps"; formattedPlan = "Standard Fiber"; }
-                        else if (plan.equalsIgnoreCase("Pro")) { speed = "100Mbps"; formattedPlan = "Pro Fiber"; }
+                        if (plan.equalsIgnoreCase("Basic")) {
+                            speed = "25Mbps";
+                            formattedPlan = "Basic Fiber";
+                        } else if (plan.equalsIgnoreCase("Standard")) {
+                            speed = "50Mbps";
+                            formattedPlan = "Standard Fiber";
+                        } else if (plan.equalsIgnoreCase("Pro")) {
+                            speed = "100Mbps";
+                            formattedPlan = "Pro Fiber";
+                        }
                     }
 
-                    // 2. Logic: Only include if admin marked as "completed" (done in calendar)
                     String billingStatus = "Pending";
                     if ("completed".equalsIgnoreCase(status)) {
                         billingStatus = "Paid";
-                        completedCount++; // Count only finished installs
-                        totalRevenue += getPriceFromPlan(plan); // Sum only finished installs
+                        completedCount++;
+                        totalRevenue += getPriceFromPlan(plan);
                     }
 
                     double price = getPriceFromPlan(plan);
@@ -84,11 +114,11 @@ public class BillingFragment extends Fragment {
                     if (date == null) date = "N/A";
 
                     if (name != null && appId != null) {
-                        fullList.add(new BillingModel(name, appId, formattedPlan, speed, "Residential", billingStatus, formattedPrice, date));
+                        // 2. PASS userId AS THE FIRST ARGUMENT (Total 9 arguments)
+                        fullList.add(new BillingModel(userId, name, appId, formattedPlan, speed, "Residential", billingStatus, formattedPrice, date));
                     }
                 }
 
-                // Update the dashboard header with accurate financial data
                 updateTopStats(totalRevenue, completedCount, totalRequests);
                 filter("All");
             }
@@ -108,20 +138,16 @@ public class BillingFragment extends Fragment {
     private void updateTopStats(double revenueTotal, int completedNum, long totalRequests) {
         if (!isAdded()) return;
 
-        // 1. Update the Revenue Text
         if (tvTotalCollected != null) {
             NumberFormat formatter = NumberFormat.getCurrencyInstance(new Locale("en", "PH"));
             tvTotalCollected.setText(formatter.format(revenueTotal));
         }
 
-        // 2. Update the Progress Bar
-        // Now it shows what percentage of your applicants have been successfully installed (completed)
         if (progressBarCollected != null && totalRequests > 0) {
             int percentage = (int) (((float) completedNum / totalRequests) * 100);
             progressBarCollected.setProgress(percentage);
         }
     }
-
 
     private void handleTabClick(TextView selectedTab, String status) {
         resetTabStyles();
@@ -143,21 +169,12 @@ public class BillingFragment extends Fragment {
     private void filter(String status) {
         List<BillingModel> filteredList = new ArrayList<>();
         for (BillingModel item : fullList) {
-            // Logic: Show all if "All" is selected, otherwise match "Paid" or "Pending"
             if (status.equalsIgnoreCase("All") || item.getStatus().equalsIgnoreCase(status)) {
                 filteredList.add(item);
             }
         }
 
-        // FIX: Instead of creating a new adapter, check if one exists
-        if (adapter == null) {
-            adapter = new BillingAdapter(filteredList);
-            recyclerView.setAdapter(adapter);
-        } else {
-            // You'll need a method in your adapter to update the list,
-            // or just re-set it like this for now:
-            adapter = new BillingAdapter(filteredList);
-            recyclerView.setAdapter(adapter);
-        }
+        adapter = new BillingAdapter(filteredList);
+        recyclerView.setAdapter(adapter);
     }
 }

@@ -67,5 +67,8 @@ dependencies {
 
     implementation("org.osmdroid:osmdroid-android:6.1.18")
 
+    implementation("com.google.firebase:firebase-messaging")
+
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
 }

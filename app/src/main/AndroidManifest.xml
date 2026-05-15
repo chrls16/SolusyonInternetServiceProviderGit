@@ -32,7 +32,7 @@
 
         <activity
             android:name=".MainActivity"
-            android:exported="true"> <!-- Changed to true -->
+            android:exported="true">
 
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -64,6 +64,15 @@
         <activity
             android:name=".PendingStatusActivity"
             android:exported="false" />
+
+        <!-- Move the service inside the application tag -->
+        <service
+            android:name=".MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
 
     </application>
 

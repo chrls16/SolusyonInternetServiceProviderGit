@@ -40,8 +40,40 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // 1. FCM Subscription with Logcat Tracking
+        com.google.firebase.messaging.FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(task -> {
+                    if (!task.isSuccessful()) {
+                        android.util.Log.w("FCM", "Fetching FCM registration token failed", task.getException());
+                        return;
+                    }
+                    // Get new FCM registration token
+                    String token = task.getResult();
+                    android.util.Log.d("FCM", "Current Device Token: " + token);
+                });
+
+        com.google.firebase.messaging.FirebaseMessaging.getInstance().subscribeToTopic("announcements")
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        android.util.Log.d("FCM", "Subscribed to announcements successfully!");
+                    } else {
+                        android.util.Log.e("FCM", "Subscription failed: " + task.getException());
+                    }
+                });
+
+        // 2. Initialize Database Reference
         mDatabase = FirebaseDatabase.getInstance(DB_URL).getReference();
 
+        // 3. Request Notification Permissions (Android 13+)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            if (androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
+                    != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                androidx.core.app.ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 101);
+            }
+        }
+
+        // 4. Determine User Role (Subscriber vs Admin)
         isSubscriber = getIntent().getBooleanExtra("IS_SUBSCRIBER", false);
         if (!isSubscriber) {
             SharedPreferences prefs = getSharedPreferences("UserSession", MODE_PRIVATE);
@@ -49,19 +81,21 @@ public class MainActivity extends AppCompatActivity {
             isSubscriber = "subscriber".equalsIgnoreCase(role);
         }
 
+        // 5. UI and Sync Setup
         setupLayout(isSubscriber);
         syncWelcomeHeader();
         syncProfilePicture();
+
+        // 6. Handle Incoming Deep Links (e.g., Password Reset Email)
         handleDeepLink(getIntent());
 
-        // Handle deep link for password reset
-        handleDeepLink(getIntent());
-
+        // 7. Decide which Fragment to load first
         if (savedInstanceState == null) {
             if (getIntent().getBooleanExtra("SHOW_LOGIN", false)) {
                 loadFragment(new LoginFragment(), false);
                 toggleSystemUI(false);
             } else {
+                // Check session status or redirect to default dashboard
                 performSessionRoleCheck();
             }
         }
@@ -238,6 +272,8 @@ public class MainActivity extends AppCompatActivity {
                     selectedFragment = new SubscriberManagement();
                 } else if (itemId == R.id.nav_billing || itemId == R.id.nav_sub_billing) {
                     selectedFragment = isSubscriber ? new UserBillingFragment() : new BillingFragment();
+                } else if (itemId == R.id.nav_plans) {
+                    selectedFragment = new PlanManagementFragment();
                 } else if (itemId == R.id.nav_reports) {
                     selectedFragment = new ReportsFragment();
                 } else if (itemId == R.id.nav_sub_profile) {

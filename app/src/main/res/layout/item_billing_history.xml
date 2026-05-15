@@ -3,83 +3,122 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="8dp"
-    app:cardCornerRadius="0dp"
-    app:cardElevation="0dp">
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:background="@color/white"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tvInitials"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="@drawable/circle_bg_blue_light"
-            android:gravity="center"
-            android:textColor="#0E3C7E"
-            android:textStyle="bold" />
-
+        <!-- Main Content Area -->
         <LinearLayout
-            android:layout_width="0dp"
+            android:id="@+id/mainContent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="16dp"
-            android:orientation="vertical">
+            android:padding="16dp"
+            android:background="@color/white"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/tvName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="#1E293B"
+                android:id="@+id/tvInitials"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/circle_bg_blue_light"
+                android:gravity="center"
+                android:textColor="#0E3C7E"
                 android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/tvAccount"
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="16dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#1E293B"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvAccount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#64748B"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tvDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#64748B"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#64748B"
-                android:textSize="12sp" />
+                android:gravity="end"
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/tvDate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="#64748B"
-                android:textSize="11sp" />
+                <TextView
+                    android:id="@+id/tvPlan"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#1E293B"
+                    android:textAlignment="viewEnd"/>
 
+                <TextView
+                    android:id="@+id/tvPlanType"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#64748B"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tvPrice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#2D62B5"
+                    android:textStyle="bold"
+                    android:textSize="14sp" />
+            </LinearLayout>
         </LinearLayout>
 
+        <!-- Action Panel (Hidden by default) -->
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:id="@+id/layoutActions"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="end"
-            android:orientation="vertical">
+            android:orientation="horizontal"
+            android:padding="12dp"
+            android:background="#F8FAFC"
+            android:visibility="gone"
+            android:weightSum="2">
 
-            <TextView
-                android:id="@+id/tvPlan"
-                android:layout_width="wrap_content"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnUnpaid"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:textColor="#1E293B"
-                android:textAlignment="viewEnd"/>
+                android:layout_weight="1"
+                android:text="Mark Unpaid"
+                android:textColor="#B9392F"
+                app:rippleColor="#20B9392F" />
 
-            <TextView
-                android:id="@+id/tvPlanType"
-                android:layout_width="wrap_content"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPaid"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:textColor="#64748B"
-                android:textSize="12sp" />
-
-            <TextView
-                android:id="@+id/tvPrice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="#2D62B5"
-                android:textStyle="bold"
-                android:textSize="14sp" />
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:text="Confirm Paid"
+                android:backgroundTint="#2D62B5"
+                app:cornerRadius="8dp" />
         </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

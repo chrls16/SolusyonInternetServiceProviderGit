@@ -37,8 +37,8 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanAdapter.ViewHolder> {
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         PlanModel plan = plans.get(position);
 
-        holder.tvName.setText(plan.getName());
-        holder.tvDetails.setText(plan.getSpeed() + " Mbps • $" + plan.getPrice() + "/mo");
+        holder.tvName.setText(plan.getName());// Inside onBindViewHolder in PlanAdapter.java
+        holder.tvDetails.setText(plan.getSpeed() + " Mbps • ₱" + plan.getPrice() + "/mo");
         holder.iconContainer.setCardBackgroundColor(plan.getColorRes());
 
         // Handle Edit Icon Click

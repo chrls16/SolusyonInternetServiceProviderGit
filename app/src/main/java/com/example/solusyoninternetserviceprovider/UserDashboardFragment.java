@@ -1,38 +1,19 @@
 package com.example.solusyoninternetserviceprovider;
-
-import android.graphics.Color;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Spinner;
-import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-
-import com.google.android.material.card.MaterialCardView;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-
+import android.graphics.Color; import android.os.Bundle; import android.view.LayoutInflater; import android.view.View; import android.view.ViewGroup; import android.widget.ArrayAdapter; import android.widget.Button; import android.widget.EditText; import android.widget.Spinner; import android.widget.Toast;
+import androidx.annotation.NonNull; import androidx.annotation.Nullable; import androidx.fragment.app.Fragment; import androidx.recyclerview.widget.LinearLayoutManager; import androidx.recyclerview.widget.RecyclerView;
+import com.google.android.material.card.MaterialCardView; import com.google.firebase.auth.FirebaseAuth; import com.google.firebase.auth.FirebaseUser; import com.google.firebase.database.DataSnapshot; import com.google.firebase.database.DatabaseError; import com.google.firebase.database.DatabaseReference; import com.google.firebase.database.FirebaseDatabase; import com.google.firebase.database.ValueEventListener;
+import java.util.ArrayList; import java.util.List;
 public class UserDashboardFragment extends Fragment {
-
-    private EditText etLastName, etFirstName, etPhone;
+    private EditText etLastName, etFirstName, etPhone, etPurok, etLandmark;
     private Spinner spBarangay;
     private Button btnProceed;
-    private MaterialCardView planBasic, planStandard, planPro;
     private MaterialCardView payGcash, payMaya, payBank, payCash;
 
-    private String selectedPlan = "Standard";
+    // RecyclerView for dynamic plans
+    private RecyclerView rvSelectPlan;
+    private List<PlanModel> availablePlans = new ArrayList<>();
+
+    private String selectedPlan = "None";
     private String selectedPayment = "Cash on Install";
 
     private FirebaseAuth mAuth;
@@ -47,7 +28,6 @@ public class UserDashboardFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // FIX: Ensure Header and Nav Bar are hidden during onboarding
         if (getActivity() instanceof MainActivity) {
             ((MainActivity) getActivity()).toggleSystemUI(false);
         }
@@ -57,6 +37,7 @@ public class UserDashboardFragment extends Fragment {
 
         initializeViews(view);
         setupListeners();
+        setupPlanRecyclerView(); // FIX: Now calling the method to load plans
         fetchUserData();
     }
 
@@ -65,10 +46,12 @@ public class UserDashboardFragment extends Fragment {
         etFirstName = view.findViewById(R.id.etFirstName);
         etPhone = view.findViewById(R.id.etPhone);
         spBarangay = view.findViewById(R.id.spBarangay);
+        etPurok = view.findViewById(R.id.etPurok);
+        etLandmark = view.findViewById(R.id.etLandmark);
         btnProceed = view.findViewById(R.id.btnProceed);
-        planBasic = view.findViewById(R.id.planBasic);
-        planStandard = view.findViewById(R.id.planStandard);
-        planPro = view.findViewById(R.id.planPro);
+
+        rvSelectPlan = view.findViewById(R.id.rvSelectPlan);
+
         payGcash = view.findViewById(R.id.payGcash);
         payMaya = view.findViewById(R.id.payMaya);
         payBank = view.findViewById(R.id.payBank);
@@ -77,9 +60,6 @@ public class UserDashboardFragment extends Fragment {
 
     private void setupListeners() {
         setupSpinner();
-        planBasic.setOnClickListener(v -> selectPlan("Basic", planBasic));
-        planStandard.setOnClickListener(v -> selectPlan("Standard", planStandard));
-        planPro.setOnClickListener(v -> selectPlan("Pro", planPro));
 
         payGcash.setOnClickListener(v -> selectPayment("Gcash", payGcash));
         payMaya.setOnClickListener(v -> selectPayment("Maya", payMaya));
@@ -89,13 +69,28 @@ public class UserDashboardFragment extends Fragment {
         btnProceed.setOnClickListener(v -> validateAndProceed());
     }
 
-    private void selectPlan(String planName, MaterialCardView selectedCard) {
-        selectedPlan = planName;
-        planBasic.setStrokeWidth(0);
-        planStandard.setStrokeWidth(0);
-        planPro.setStrokeWidth(0);
-        selectedCard.setStrokeWidth(dpToPx(2));
-        selectedCard.setStrokeColor(Color.parseColor("#2D62B5"));
+    private void setupPlanRecyclerView() {
+        rvSelectPlan.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        mDatabase.child("Plans").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                availablePlans.clear();
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    PlanModel p = ds.getValue(PlanModel.class);
+                    if (p != null) {
+                        p.setPlanId(ds.getKey());
+                        availablePlans.add(p);
+                    }
+                }
+
+                SelectPlanAdapter planAdapter = new SelectPlanAdapter(availablePlans, plan -> {
+                    selectedPlan = plan.getName();
+                });
+                rvSelectPlan.setAdapter(planAdapter);
+            }
+            @Override public void onCancelled(@NonNull DatabaseError error) {}
+        });
     }
 
     private void selectPayment(String paymentName, MaterialCardView selectedCard) {
@@ -144,8 +139,12 @@ public class UserDashboardFragment extends Fragment {
         String lastName = etLastName.getText().toString().trim();
         String barangay = spBarangay.getSelectedItem().toString();
 
+        if (selectedPlan.equals("None")) {
+            Toast.makeText(getContext(), "Please select an internet plan", Toast.LENGTH_SHORT).show();
+            return;
+        }
         if (phone.length() != 11 || !phone.startsWith("09")) {
-            etPhone.setError("Must be exactly 11 digits starting with 09");
+            etPhone.setError("Must be 11 digits starting with 09");
             return;
         }
         if (spBarangay.getSelectedItemPosition() == 0) {
@@ -159,6 +158,8 @@ public class UserDashboardFragment extends Fragment {
         bundle.putString("barangay", barangay);
         bundle.putString("plan", selectedPlan);
         bundle.putString("payment", selectedPayment);
+        bundle.putString("purok", etPurok.getText().toString());
+        bundle.putString("landmark", etLandmark.getText().toString());
 
         UserTermsFragment termsFragment = new UserTermsFragment();
         termsFragment.setArguments(bundle);

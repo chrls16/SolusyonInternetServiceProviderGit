@@ -1,7 +1,9 @@
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fillViewport="true"
     android:background="#F8FAFC">
 
     <LinearLayout
@@ -10,6 +12,7 @@
         android:orientation="vertical"
         android:padding="20dp">
 
+        <!-- OVERDUE BANNER (image_d45b3d.png) -->
         <LinearLayout
             android:id="@+id/bannerOverdue"
             android:layout_width="match_parent"
@@ -21,39 +24,33 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-
                 <ImageView
                     android:id="@+id/iconAlert"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:src="@drawable/ic_error"
-                    app:tint="@color/overdue_btn" />
-
+                    app:tint="#B9392F" />
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_toEndOf="@id/iconAlert"
                     android:layout_marginStart="16dp"
                     android:orientation="vertical">
-
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="CRITICAL STATUS"
                         android:textSize="11sp"
                         android:textStyle="bold"
-                        android:textColor="@color/overdue_text_title"/>
-
+                        android:textColor="#842029"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Payment Overdue"
                         android:textSize="20sp"
                         android:textStyle="bold"
-                        android:textColor="@color/overdue_text_title"/>
-
+                        android:textColor="#842029"/>
                 </LinearLayout>
-
             </RelativeLayout>
 
             <TextView
@@ -64,16 +61,18 @@
                 android:textColor="#842029"
                 android:textSize="14sp"/>
 
-            <Button
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPayNow"
                 android:layout_width="wrap_content"
                 android:layout_height="50dp"
                 android:layout_marginTop="20dp"
-                android:backgroundTint="@color/overdue_btn"
+                android:backgroundTint="#B9392F"
                 android:text="Pay Balance Now"
                 android:textAllCaps="false"
                 app:cornerRadius="12dp" />
         </LinearLayout>
 
+        <!-- CURRENT PLAN CARD (image_a29480.png Style with image_a2e691.png Data) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -85,7 +84,6 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-
                 <TextView
                     android:id="@+id/labelPlan"
                     android:layout_width="wrap_content"
@@ -94,7 +92,6 @@
                     android:textColor="#94A3B8"
                     android:textSize="11sp"
                     android:textStyle="bold" />
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -103,10 +100,9 @@
                     android:paddingHorizontal="12dp"
                     android:paddingVertical="4dp"
                     android:text="ACTIVE"
-                    android:textColor="@color/billing_card_bg"
+                    android:textColor="#FFFFFF"
                     android:textSize="10sp"
                     android:textStyle="bold" />
-
                 <TextView
                     android:id="@+id/tvPlanTitle"
                     android:layout_width="wrap_content"
@@ -114,7 +110,7 @@
                     android:layout_below="@id/labelPlan"
                     android:layout_marginTop="8dp"
                     android:text="Enterprise Fiber"
-                    android:textColor="@color/white"
+                    android:textColor="#FFFFFF"
                     android:textSize="28sp"
                     android:textStyle="bold" />
             </RelativeLayout>
@@ -124,8 +120,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="15dp"
-                android:text="/month"
-                android:textColor="@color/white"
+                android:text="₱ 0.00/month"
+                android:textColor="#FFFFFF"
                 android:textSize="32sp"
                 android:textStyle="bold" />
 
@@ -133,21 +129,85 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:weightSum="2">
 
-                <include
-                    layout="@layout/item_mini_stat"
+                <!-- NEXT BILLING CARD -->
+                <androidx.cardview.widget.CardView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
-                    android:layout_weight="1" />
+                    android:layout_weight="1"
+                    app:cardBackgroundColor="#F1F5F9"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="0dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_calendar"
+                            app:tint="#2D62B5" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:text="NEXT BILLING"
+                            android:textColor="#94A3B8"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:id="@+id/tvNextBillingDate"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Oct 12, 2023"
+                            android:textColor="#1E293B"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
 
-                <include
-                    layout="@layout/item_mini_stat"
+                <!-- TOTAL DUE CARD -->
+                <androidx.cardview.widget.CardView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1" />
-
+                    android:layout_weight="1"
+                    app:cardBackgroundColor="#F1F5F9"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="0dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_gcash"
+                            app:tint="#2D62B5" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:text="TOTAL DUE"
+                            android:textColor="#94A3B8"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:id="@+id/tvTotalDueAmount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="₱ 0.00"
+                            android:textColor="#B9392F"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
             </LinearLayout>
         </LinearLayout>
 
@@ -167,9 +227,5 @@
             android:layout_marginTop="16dp"
             android:nestedScrollingEnabled="false" />
 
-
-
     </LinearLayout>
-
-
-</ScrollView>
+</androidx.core.widget.NestedScrollView>

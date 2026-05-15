@@ -50,7 +50,7 @@
                 android:id="@+id/tvPlanDetails"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="25 Mbps • $29.99/mo"
+                android:text="25 Mbps • ₱499/mo"
                 android:textColor="#64748B"
                 android:textSize="13sp" />
         </LinearLayout>

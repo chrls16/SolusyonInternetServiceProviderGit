@@ -8,6 +8,12 @@
         android:id="@+id/nav_subscribers"
         android:icon="@drawable/ic_people"
         android:title="SUBSCRIBERS" />
+
+    <item
+        android:id="@+id/nav_plans"
+        android:icon="@drawable/ic_router"
+        android:title="PLANS" />
+
     <item
         android:id="@+id/nav_billing"
         android:icon="@drawable/ic_billing"
