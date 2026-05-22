@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -26,6 +27,7 @@
             android:textColor="#64748B"
             android:textSize="16sp" />
 
+        <!-- Total Subscribers Card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -56,7 +58,7 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@id/lblSubscribers"
                     android:layout_marginTop="16dp"
-                    android:text=""
+                    android:text="0"
                     android:textColor="#0E3C7E"
                     android:textSize="32sp"
                     android:textStyle="bold" />
@@ -80,6 +82,7 @@
             </RelativeLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Monthly Revenue Card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -110,7 +113,7 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@id/lblMonthlyRev"
                     android:layout_marginTop="16dp"
-                    android:text="₱"
+                    android:text="₱ 0.00"
                     android:textColor="#0E3C7E"
                     android:textSize="32sp"
                     android:textStyle="bold" />
@@ -134,6 +137,7 @@
             </RelativeLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Annual Revenue Card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -164,7 +168,7 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@id/lblAnnualRev"
                     android:layout_marginTop="16dp"
-                    android:text="₱"
+                    android:text="₱ 0.00"
                     android:textColor="#0E3C7E"
                     android:textSize="32sp"
                     android:textStyle="bold" />
@@ -188,6 +192,7 @@
             </RelativeLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Subscription Growth Chart Card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -221,8 +226,7 @@
                             android:text="Subscription\nGrowth"
                             android:textColor="#0F172A"
                             android:textSize="22sp"
-                            android:textStyle="bold"
-                            android:lineSpacingExtra="2dp" />
+                            android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -246,30 +250,24 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:background="@drawable/bg_filter_selected"
-                            android:gravity="center"
                             android:paddingHorizontal="16dp"
                             android:paddingVertical="12dp"
                             android:text="6\nMonths"
                             android:textAlignment="center"
                             android:textColor="#0E3C7E"
                             android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:clickable="true"
-                            android:focusable="true" />
+                            android:textStyle="bold" />
 
                         <TextView
                             android:id="@+id/btnFilter1Year"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="12dp"
-                            android:gravity="center"
                             android:padding="8dp"
                             android:text="1\nYear"
                             android:textAlignment="center"
                             android:textColor="#64748B"
-                            android:textSize="12sp"
-                            android:clickable="true"
-                            android:focusable="true" />
+                            android:textSize="12sp" />
                     </LinearLayout>
                 </RelativeLayout>
 
@@ -283,15 +281,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:scrollbars="none"
-                    android:overScrollMode="never">
+                    android:scrollbars="none">
 
                     <LinearLayout
                         android:id="@+id/monthContainer"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
-
                         <TextView android:id="@+id/monthJan" style="@style/MonthTabStyle" android:text="JAN" />
                         <TextView android:id="@+id/monthFeb" style="@style/MonthTabStyle" android:text="FEB" />
                         <TextView android:id="@+id/monthMar" style="@style/MonthTabStyle" android:text="MAR" />
@@ -304,13 +300,12 @@
                         <TextView android:id="@+id/monthOct" style="@style/MonthTabStyle" android:text="OCT" />
                         <TextView android:id="@+id/monthNov" style="@style/MonthTabStyle" android:text="NOV" />
                         <TextView android:id="@+id/monthDec" style="@style/MonthTabStyle" android:text="DEC" />
-
                     </LinearLayout>
                 </HorizontalScrollView>
-
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Dynamic Barangay Distribution Card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -331,67 +326,18 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Regional Distribution"
+                    android:text="Barangay Distribution"
                     android:textColor="#0F172A"
                     android:textSize="20sp"
                     android:textStyle="bold" />
 
-                <RelativeLayout
+                <!-- Dynamic list of all barangays -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvBarangayDistribution"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="MANILA SOUTH" android:textSize="12sp" android:textStyle="bold" android:textColor="#0F172A"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:text="42%" android:textSize="12sp" android:textStyle="bold" android:textColor="#0F172A"/>
-                </RelativeLayout>
-                <ProgressBar
-                    style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="8dp"
                     android:layout_marginTop="8dp"
-                    android:progress="42"
-                    android:progressDrawable="@drawable/progress_blue" />
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="QUEZON CITY" android:textSize="12sp" android:textStyle="bold" android:textColor="#0F172A"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:text="28%" android:textSize="12sp" android:textStyle="bold" android:textColor="#0F172A"/>
-                </RelativeLayout>
-                <ProgressBar
-                    style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="8dp"
-                    android:layout_marginTop="8dp"
-                    android:progress="28"
-                    android:progressDrawable="@drawable/progress_teal" />
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="TAGUIG / BGC" android:textSize="12sp" android:textStyle="bold" android:textColor="#0F172A"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:text="15%" android:textSize="12sp" android:textStyle="bold" android:textColor="#0F172A"/>
-                </RelativeLayout>
-                <ProgressBar
-                    style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="8dp"
-                    android:layout_marginTop="8dp"
-                    android:progress="15"
-                    android:progressDrawable="@drawable/progress_brown" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:layout_marginTop="32dp"
-                    android:text="VIEW MAP DETAILS"
-                    android:textColor="#0E3C7E"
-                    android:textStyle="bold"
-                    app:cornerRadius="12dp"
-                    android:backgroundTint="#FFFFFF"
-                    app:strokeColor="#F1F5F9"
-                    app:strokeWidth="1dp" />
+                    android:nestedScrollingEnabled="false" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

@@ -235,7 +235,7 @@
             android:layout_height="60dp"
             android:layout_marginTop="32dp"
             android:backgroundTint="#1D4ED8"
-            android:text="Proceed to Create Account  →"
+            android:text="Proceed to Login  →"
             android:textAllCaps="false"
             app:cardCornerRadius="12dp"/>
 

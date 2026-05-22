@@ -31,6 +31,9 @@ public class ClientDashboardFragment extends Fragment {
     private DatabaseReference mDatabase;
     private FirebaseAuth mAuth;
 
+    private ActivityAdapter activityAdapter;
+    private List<UserActivityItem> paymentList = new ArrayList<>();
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -65,11 +68,18 @@ public class ClientDashboardFragment extends Fragment {
         return view;
     }
 
+    private void setupTransactions() {
+        rvTransactions.setLayoutManager(new LinearLayoutManager(getContext()));
+        // Link with real ActivityAdapter used in Billing tab
+        activityAdapter = new ActivityAdapter(paymentList);
+        rvTransactions.setAdapter(activityAdapter);
+        fetchPaymentHistory();
+    }
+
     private void fetchActivePlanDetails() {
         String uid = mAuth.getUid();
         if (uid == null) return;
 
-        // Listen to ServiceApplications for the current user's plan details
         mDatabase.child("ServiceApplications").child(uid).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -82,14 +92,14 @@ public class ClientDashboardFragment extends Fragment {
                     }
                 }
             }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {}
+            @Override public void onCancelled(@NonNull DatabaseError error) {}
         });
     }
 
-    private void updateUIByPlan(String planName, String date) { if (date != null) { tvDate.setText("Availed on " + date); } tvPlanName.setText(planName); // Set title immediately
-// Fetch details (price/speed) from the Plans node
+    private void updateUIByPlan(String planName, String date) {
+        if (date != null) { tvDate.setText("Availed on " + date); }
+        tvPlanName.setText(planName);
+
         mDatabase.child("Plans").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -97,12 +107,11 @@ public class ClientDashboardFragment extends Fragment {
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     String dbPlanName = ds.child("name").getValue(String.class);
                     if (dbPlanName != null && dbPlanName.equalsIgnoreCase(planName)) {
-                        // Update UI with real data from Admin Panel
                         String price = ds.child("price").getValue(String.class);
                         String speed = ds.child("speed").getValue(String.class);
                         String upload = ds.child("upload").getValue(String.class);
 
-                        tvPlanPrice.setText("₱ " + price);
+                        tvPlanPrice.setText("₱" + price);
                         tvDownloadSpeed.setText(speed + " Mbps");
                         tvUploadSpeed.setText(upload + " Mbps");
                         found = true;
@@ -110,23 +119,34 @@ public class ClientDashboardFragment extends Fragment {
                     }
                 }
                 if (!found) {
-                    tvPlanPrice.setText("₱ 0.00");
+                    tvPlanPrice.setText("₱0.00");
                     tvDownloadSpeed.setText("0 Mbps");
                     tvUploadSpeed.setText("0 Mbps");
                 }
             }
-
             @Override public void onCancelled(@NonNull DatabaseError error) {}
         });
     }
 
-    private void setupTransactions() {
-        rvTransactions.setLayoutManager(new LinearLayoutManager(getContext()));
-        List<TransactionModel> list = new ArrayList<>();
-        list.add(new TransactionModel("Invoice #SOL-9921", "Nov 01, 2023 • Paid via Visa", "₱89.00"));
-        list.add(new TransactionModel("Invoice #SOL-8845", "Oct 01, 2023 • Paid via Visa", "₱89.00"));
+    private void fetchPaymentHistory() {
+        String uid = mAuth.getUid();
+        if (uid == null) return;
 
-        TransactionAdapter adapter = new TransactionAdapter(list);
-        rvTransactions.setAdapter(adapter);
+        mDatabase.child("Payments").child(uid).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                paymentList.clear();
+                if (snapshot.exists()) {
+                    for (DataSnapshot data : snapshot.getChildren()) {
+                        UserActivityItem item = data.getValue(UserActivityItem.class);
+                        if (item != null) paymentList.add(0, item); // latest first
+                    }
+                }
+                if (isAdded()) {
+                    activityAdapter.notifyDataSetChanged();
+                }
+            }
+            @Override public void onCancelled(@NonNull DatabaseError error) {}
+        });
     }
 }

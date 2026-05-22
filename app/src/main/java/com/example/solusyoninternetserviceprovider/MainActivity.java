@@ -197,8 +197,8 @@ public class MainActivity extends AppCompatActivity {
                         loadFragment(new ClientDashboardFragment(), false);
                         toggleSystemUI(true); // SHOW UI
                     } else if ("approved".equalsIgnoreCase(applicationStatus)) {
-                        loadFragment(new UserBillingFragment(), false);
-                        toggleSystemUI(true); // SHOW UI
+                        loadFragment(new ClientDashboardFragment(), false); // Correct way to load
+                        toggleSystemUI(true);
                     } else {
                         navigateToReceipt(snapshot); // Activity handles its own UI
                     }
@@ -233,21 +233,9 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
-    public void setupLayout(boolean subscriberMode) {
-        this.isSubscriber = subscriberMode;
-        setContentView(isSubscriber ? R.layout.activity_main_user : R.layout.activity_main);
-
+    public void setupLayout(boolean subscriberMode) { this.isSubscriber = subscriberMode; setContentView(isSubscriber ? R.layout.activity_main_user : R.layout.activity_main);
         bottomNavigationView = findViewById(R.id.bottomNavigation);
         ivProfile = findViewById(R.id.ivProfile);
-
-        if (ivProfile != null) {
-            ivProfile.setOnClickListener(v -> {
-                if (isSubscriber) {
-                    loadFragment(new SubscriberProfileFragment(), true);
-                    bottomNavigationView.setSelectedItemId(R.id.nav_sub_profile);
-                } else showLogoutDialog();
-            });
-        }
 
         if (bottomNavigationView != null) {
             bottomNavigationView.setOnItemSelectedListener(item -> {
@@ -256,32 +244,46 @@ public class MainActivity extends AppCompatActivity {
 
                 if (itemId == R.id.nav_dashboard || itemId == R.id.nav_sub_dashboard) {
                     if (isSubscriber) {
-                        if ("completed".equalsIgnoreCase(applicationStatus)) {
+                        // Fix: Dashboard tab now shows the real Dashboard for both "approved" and "completed" users.
+                        if ("completed".equalsIgnoreCase(applicationStatus) || "approved".equalsIgnoreCase(applicationStatus)) {
                             selectedFragment = new ClientDashboardFragment();
                             toggleSystemUI(true);
                         } else {
+                            // New user or no application yet, show the form
                             selectedFragment = new UserDashboardFragment();
-                            toggleSystemUI(false); // HIDE UI if they click dashboard but are back at the form
+                            toggleSystemUI(false);
                         }
                     } else {
                         selectedFragment = new DashboardFragment();
                         toggleSystemUI(true);
                     }
-                    selectedFragment = isSubscriber ? new ClientDashboardFragment() : new DashboardFragment();
-                } else if (itemId == R.id.nav_subscribers) {
+                }
+                else if (itemId == R.id.nav_subscribers) {
                     selectedFragment = new SubscriberManagement();
-                } else if (itemId == R.id.nav_billing || itemId == R.id.nav_sub_billing) {
-                    selectedFragment = isSubscriber ? new UserBillingFragment() : new BillingFragment();
-                } else if (itemId == R.id.nav_plans) {
+                    toggleSystemUI(true);
+                }
+                else if (itemId == R.id.nav_plans) {
                     selectedFragment = new PlanManagementFragment();
-                } else if (itemId == R.id.nav_reports) {
+                    toggleSystemUI(true);
+                }
+                else if (itemId == R.id.nav_billing || itemId == R.id.nav_sub_billing) {
+                    selectedFragment = isSubscriber ? new UserBillingFragment() : new BillingFragment();
+                    toggleSystemUI(true);
+                }
+                else if (itemId == R.id.nav_reports) {
                     selectedFragment = new ReportsFragment();
-                } else if (itemId == R.id.nav_sub_profile) {
+                    toggleSystemUI(true);
+                }
+                else if (itemId == R.id.nav_sub_profile) {
                     selectedFragment = new SubscriberProfileFragment();
+                    toggleSystemUI(true);
                 }
 
-                if (selectedFragment != null) loadFragment(selectedFragment, true);
-                return true;
+                if (selectedFragment != null) {
+                    loadFragment(selectedFragment, true);
+                    return true;
+                }
+                return false;
             });
         }
         syncProfilePicture();

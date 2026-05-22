@@ -33,6 +33,14 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
         holder.tvAmount.setText(item.getAmount());
         holder.tvStatus.setText(item.getStatus());
 
+        // Bind the Billing Date to the transaction
+        if (item.getBillingDate() != null) {
+            holder.tvActBillingDate.setText("Billing Date: " + item.getBillingDate());
+            holder.tvActBillingDate.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvActBillingDate.setVisibility(View.GONE);
+        }
+
         // Color Logic: Red for Unpaid, Blue for Paid
         if (item.getStatus().equalsIgnoreCase("UNPAID")) {
             holder.tvStatus.setTextColor(Color.parseColor("#B9392F"));
@@ -47,7 +55,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvTitle, tvId, tvAmount, tvStatus;
+        TextView tvTitle, tvId, tvAmount, tvStatus, tvActBillingDate;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -55,6 +63,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
             tvId = itemView.findViewById(R.id.tvActId);
             tvAmount = itemView.findViewById(R.id.tvActAmount);
             tvStatus = itemView.findViewById(R.id.tvActStatus);
+            tvActBillingDate = itemView.findViewById(R.id.tvActBillingDate);
         }
     }
 }

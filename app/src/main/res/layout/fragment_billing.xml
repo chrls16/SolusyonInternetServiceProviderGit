@@ -1,4 +1,13 @@
-<?xml version="1.0" encoding="utf-8"?> <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#F8FAFC" android:fillViewport="true" android:clipChildren="false" android:clipToPadding="false">
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F8FAFC"
+    android:fillViewport="true"
+    android:clipChildren="false"
+    android:clipToPadding="false">
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -19,20 +28,39 @@
             app:cardUseCompatPadding="true"
             app:strokeWidth="0dp">
 
-            <LinearLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="24dp"
-                android:orientation="vertical">
+                android:padding="24dp">
 
                 <TextView
+                    android:id="@+id/lblTotalCollected"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="TOTAL COLLECTED"
                     android:textColor="#64748B"
                     android:textSize="12sp"
                     android:textStyle="bold"
-                    android:letterSpacing="0.05" />
+                    android:letterSpacing="0.05"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <!-- Month Filter Button -->
+                <TextView
+                    android:id="@+id/tvSelectedMonth"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Select Month"
+                    android:textColor="#2D62B5"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="4dp"
+                    android:background="@drawable/bg_tab_pill_container"
+                    android:drawablePadding="4dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="@id/lblTotalCollected" />
 
                 <TextView
                     android:id="@+id/tvTotalCollected"
@@ -42,7 +70,9 @@
                     android:textColor="#0E3C7E"
                     android:textSize="32sp"
                     android:textStyle="bold"
-                    android:layout_marginTop="8dp" />
+                    android:layout_marginTop="8dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/lblTotalCollected" />
 
                 <ProgressBar
                     android:id="@+id/progressBarCollected"
@@ -51,8 +81,11 @@
                     android:layout_height="wrap_content"
                     android:progress="0"
                     android:layout_marginTop="16dp"
-                    android:progressTint="#0E3C7E" />
-            </LinearLayout>
+                    android:progressTint="#0E3C7E"
+                    app:layout_constraintTop_toBottomOf="@id/tvTotalCollected"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
         </com.google.android.material.card.MaterialCardView>
 
         <TextView
@@ -64,17 +97,13 @@
             android:layout_marginTop="32dp"
             android:textColor="#0F172A" />
 
-        <!-- Filter Tabs -->
         <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:scrollbars="none"
-            android:clipChildren="false"
-            android:clipToPadding="false">
+            android:scrollbars="none">
 
             <LinearLayout
-                android:id="@+id/tabContainer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_tab_pill_container"
@@ -99,7 +128,6 @@
             </LinearLayout>
         </HorizontalScrollView>
 
-        <!-- Subscriber Billing List -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvBillingHistory"
             android:layout_width="match_parent"

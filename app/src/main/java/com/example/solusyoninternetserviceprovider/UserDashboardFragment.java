@@ -1,17 +1,39 @@
 package com.example.solusyoninternetserviceprovider;
-import android.graphics.Color; import android.os.Bundle; import android.view.LayoutInflater; import android.view.View; import android.view.ViewGroup; import android.widget.ArrayAdapter; import android.widget.Button; import android.widget.EditText; import android.widget.Spinner; import android.widget.Toast;
-import androidx.annotation.NonNull; import androidx.annotation.Nullable; import androidx.fragment.app.Fragment; import androidx.recyclerview.widget.LinearLayoutManager; import androidx.recyclerview.widget.RecyclerView;
-import com.google.android.material.card.MaterialCardView; import com.google.firebase.auth.FirebaseAuth; import com.google.firebase.auth.FirebaseUser; import com.google.firebase.database.DataSnapshot; import com.google.firebase.database.DatabaseError; import com.google.firebase.database.DatabaseReference; import com.google.firebase.database.FirebaseDatabase; import com.google.firebase.database.ValueEventListener;
-import java.util.ArrayList; import java.util.List;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Spinner;
+import android.widget.Toast;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import com.google.android.material.card.MaterialCardView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import java.util.ArrayList;
+import java.util.List;
+
 public class UserDashboardFragment extends Fragment {
     private EditText etLastName, etFirstName, etPhone, etPurok, etLandmark;
     private Spinner spBarangay;
     private Button btnProceed;
     private MaterialCardView payGcash, payMaya, payBank, payCash;
 
-    // RecyclerView for dynamic plans
     private RecyclerView rvSelectPlan;
     private List<PlanModel> availablePlans = new ArrayList<>();
+    private SelectPlanAdapter planAdapter; // PERSISTENT ADAPTER
 
     private String selectedPlan = "None";
     private String selectedPayment = "Cash on Install";
@@ -27,17 +49,15 @@ public class UserDashboardFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         if (getActivity() instanceof MainActivity) {
             ((MainActivity) getActivity()).toggleSystemUI(false);
         }
-
         mAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance("https://solusyon-isp-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference();
 
         initializeViews(view);
         setupListeners();
-        setupPlanRecyclerView(); // FIX: Now calling the method to load plans
+        setupPlanRecyclerView();
         fetchUserData();
     }
 
@@ -49,9 +69,7 @@ public class UserDashboardFragment extends Fragment {
         etPurok = view.findViewById(R.id.etPurok);
         etLandmark = view.findViewById(R.id.etLandmark);
         btnProceed = view.findViewById(R.id.btnProceed);
-
         rvSelectPlan = view.findViewById(R.id.rvSelectPlan);
-
         payGcash = view.findViewById(R.id.payGcash);
         payMaya = view.findViewById(R.id.payMaya);
         payBank = view.findViewById(R.id.payBank);
@@ -60,17 +78,21 @@ public class UserDashboardFragment extends Fragment {
 
     private void setupListeners() {
         setupSpinner();
-
         payGcash.setOnClickListener(v -> selectPayment("Gcash", payGcash));
         payMaya.setOnClickListener(v -> selectPayment("Maya", payMaya));
         payBank.setOnClickListener(v -> selectPayment("Bank Transfer", payBank));
         payCash.setOnClickListener(v -> selectPayment("Cash on Install", payCash));
-
         btnProceed.setOnClickListener(v -> validateAndProceed());
     }
 
     private void setupPlanRecyclerView() {
         rvSelectPlan.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        // INITIALIZE ADAPTER ONCE
+        planAdapter = new SelectPlanAdapter(availablePlans, plan -> {
+            selectedPlan = plan.getName();
+        });
+        rvSelectPlan.setAdapter(planAdapter);
 
         mDatabase.child("Plans").addValueEventListener(new ValueEventListener() {
             @Override
@@ -83,11 +105,8 @@ public class UserDashboardFragment extends Fragment {
                         availablePlans.add(p);
                     }
                 }
-
-                SelectPlanAdapter planAdapter = new SelectPlanAdapter(availablePlans, plan -> {
-                    selectedPlan = plan.getName();
-                });
-                rvSelectPlan.setAdapter(planAdapter);
+                // NOTIFY CHANGES INSTEAD OF RE-SETTING
+                if (planAdapter != null) planAdapter.notifyDataSetChanged();
             }
             @Override public void onCancelled(@NonNull DatabaseError error) {}
         });

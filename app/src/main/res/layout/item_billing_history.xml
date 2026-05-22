@@ -1,10 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="8dp"
     app:cardCornerRadius="12dp"
-    app:cardElevation="2dp">
+    app:cardElevation="2dp"
+    app:strokeWidth="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -28,7 +30,8 @@
                 android:background="@drawable/circle_bg_blue_light"
                 android:gravity="center"
                 android:textColor="#0E3C7E"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:textSize="16sp" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -37,13 +40,36 @@
                 android:layout_marginStart="16dp"
                 android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/tvName"
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="#1E293B"
-                    android:textStyle="bold" />
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
 
+                    <TextView
+                        android:id="@+id/tvName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#1E293B"
+                        android:textStyle="bold"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:id="@+id/tvPaidBadge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/bg_badge_paid"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="2dp"
+                        android:text="PAID"
+                        android:textColor="#059669"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:visibility="gone" />
+                </LinearLayout>
+
+                <!-- Restored Fields -->
                 <TextView
                     android:id="@+id/tvAccount"
                     android:layout_width="wrap_content"
@@ -70,7 +96,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="#1E293B"
-                    android:textAlignment="viewEnd"/>
+                    android:textAlignment="viewEnd"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvPlanType"
@@ -89,7 +116,7 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Action Panel (Hidden by default) -->
+        <!-- Action Panel -->
         <LinearLayout
             android:id="@+id/layoutActions"
             android:layout_width="match_parent"
@@ -97,26 +124,14 @@
             android:orientation="horizontal"
             android:padding="12dp"
             android:background="#F8FAFC"
-            android:visibility="gone"
-            android:weightSum="2">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnUnpaid"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Mark Unpaid"
-                android:textColor="#B9392F"
-                app:rippleColor="#20B9392F" />
+            android:visibility="gone">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnPaid"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_weight="1"
-                android:text="Confirm Paid"
+                android:text="Mark as Paid"
+                android:textAllCaps="false"
                 android:backgroundTint="#2D62B5"
                 app:cornerRadius="8dp" />
         </LinearLayout>

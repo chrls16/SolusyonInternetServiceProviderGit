@@ -16,7 +16,6 @@
         android:clipChildren="false"
         android:clipToPadding="false">
 
-        <!-- Header Card: Updated to 12dp and fixed shadows -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="140dp"

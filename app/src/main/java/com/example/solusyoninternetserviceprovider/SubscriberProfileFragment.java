@@ -84,11 +84,6 @@ public class SubscriberProfileFragment extends Fragment {
         etEmailAddress = v.findViewById(R.id.etEmailAddress);
         etServiceAddress = v.findViewById(R.id.etServiceAddress);
         btnSaveChanges = v.findViewById(R.id.btnSaveChanges);
-        tvModemModel = v.findViewById(R.id.tvModemModel);
-        tvMacAddress = v.findViewById(R.id.tvMacAddress);
-        tvIpAllocation = v.findViewById(R.id.tvIpAllocation);
-        tvInstallationDate = v.findViewById(R.id.tvInstallationDate);
-        tvDataUsage = v.findViewById(R.id.tvDataUsage);
         btnLogoutProfile = v.findViewById(R.id.btnLogoutProfile);
         profileImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
     }

@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -34,7 +35,7 @@ public class DashboardFragment extends Fragment {
     private TextView tvCurrentMonthYear, tvLogisticsCount;
     private ImageView btnPrevMonth, btnNextMonth;
     private RecyclerView rvCalendarGrid, rvEvents;
-    private MaterialButton btnViewList, btnCreateAnnouncement, btnAddStaff;
+    private MaterialButton btnViewList, btnCreateAnnouncement, btnAddStaff, btnAddPlan;
     private View cardStaffList;
 
     private EventAdapter eventAdapter;
@@ -81,6 +82,7 @@ public class DashboardFragment extends Fragment {
         rvEvents = view.findViewById(R.id.rvEvents);
         btnCreateAnnouncement = view.findViewById(R.id.btnCreateAnnouncement);
         btnAddStaff = view.findViewById(R.id.btnAddStaff);
+        btnAddPlan = view.findViewById(R.id.btnAddPlan); // Initialize btnAddPlan
         cardStaffList = view.findViewById(R.id.cardStaffList);
 
         // 3. Initialize Lists
@@ -124,6 +126,26 @@ public class DashboardFragment extends Fragment {
                 if (getActivity() != null) {
                     Intent intent = new Intent(getActivity(), AddStaff.class);
                     startActivity(intent);
+                }
+            });
+        }
+
+        // NEW: Add Plan Navigation logic
+        if (btnAddPlan != null) {
+            btnAddPlan.setOnClickListener(v -> {
+                // Switch to Plan Management Fragment
+                getParentFragmentManager().beginTransaction()
+                        .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+                        .replace(R.id.fragment_container, new PlanManagementFragment())
+                        .addToBackStack(null)
+                        .commit();
+
+                // Synchronize the selection on the Bottom Navigation Bar
+                if (getActivity() != null) {
+                    BottomNavigationView nav = getActivity().findViewById(R.id.bottomNavigation);
+                    if (nav != null) {
+                        nav.setSelectedItemId(R.id.nav_plans);
+                    }
                 }
             });
         }

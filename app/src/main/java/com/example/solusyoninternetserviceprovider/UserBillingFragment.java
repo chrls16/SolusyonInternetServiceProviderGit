@@ -41,6 +41,8 @@ public class UserBillingFragment extends Fragment {
     private FirebaseAuth mAuth;
     private final String DB_URL = "https://solusyon-isp-default-rtdb.asia-southeast1.firebasedatabase.app/";
 
+    private String mInstallDateStr;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -76,33 +78,23 @@ public class UserBillingFragment extends Fragment {
         String uid = mAuth.getUid();
         if (uid == null) return;
 
-        // 1. Listen to ServiceApplications in REAL-TIME
+        // 1. Listen to ServiceApplications (Installation Info)
         mDatabase.child("ServiceApplications").child(uid).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists() && isAdded()) {
                     String plan = snapshot.child("plan").getValue(String.class);
-                    String status = snapshot.child("status").getValue(String.class);
-                    String installDateStr = snapshot.child("date").getValue(String.class);
+                    mInstallDateStr = snapshot.child("date").getValue(String.class);
 
                     updatePlanUI(plan);
-                    calculateNextBillingDate(installDateStr);
-
-                    // LOGIC: If status is "approved", admin marked them as Unpaid (due to overdue).
-                    // If status is "completed", they are current/fully paid.
-                    if ("approved".equalsIgnoreCase(status)) {
-                        bannerOverdue.setVisibility(View.VISIBLE);
-                    } else {
-                        bannerOverdue.setVisibility(View.GONE);
-                    }
+                    calculateNextBillingDate(mInstallDateStr);
+                    evaluateOverdueBanner();
                 }
             }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {}
+            @Override public void onCancelled(@NonNull DatabaseError error) {}
         });
 
-        // 2. Fetch Recent Transactions
+        // 2. Listen to Payments (Transaction History)
         mDatabase.child("Payments").child(uid).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -114,23 +106,76 @@ public class UserBillingFragment extends Fragment {
                     }
                 }
                 adapter.notifyDataSetChanged();
+                evaluateOverdueBanner();
             }
             @Override public void onCancelled(@NonNull DatabaseError error) {}
         });
+    }
+
+    private void evaluateOverdueBanner() {
+        if (mInstallDateStr == null || billingList == null || !isAdded()) return;
+
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
+            SimpleDateFormat monthYearSdf = new SimpleDateFormat("MMMM yyyy", Locale.getDefault());
+
+            Date installDate = sdf.parse(mInstallDateStr);
+            if (installDate == null) return;
+
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(installDate);
+            // Ignore time for comparison
+            cal.set(Calendar.HOUR_OF_DAY, 0); cal.set(Calendar.MINUTE, 0); cal.set(Calendar.SECOND, 0); cal.set(Calendar.MILLISECOND, 0);
+
+            Calendar today = Calendar.getInstance();
+            today.set(Calendar.HOUR_OF_DAY, 0); today.set(Calendar.MINUTE, 0); today.set(Calendar.SECOND, 0); today.set(Calendar.MILLISECOND, 0);
+
+            boolean isOverdue = false;
+
+            // First billing deadline is 1 month after installation
+            cal.add(Calendar.MONTH, 1);
+
+            // Loop through all billing deadlines that have already passed
+            while (cal.before(today)) {
+                // Identify the billed month (the month prior to the deadline)
+                Calendar billedMonthCal = (Calendar) cal.clone();
+                billedMonthCal.add(Calendar.MONTH, -1);
+                String targetMonth = monthYearSdf.format(billedMonthCal.getTime());
+
+                boolean hasPaidForThisMonth = false;
+                for (UserActivityItem payment : billingList) {
+                    if (targetMonth.equalsIgnoreCase(payment.getMonth()) && "PAID".equalsIgnoreCase(payment.getStatus())) {
+                        hasPaidForThisMonth = true;
+                        break;
+                    }
+                }
+
+                if (!hasPaidForThisMonth) {
+                    isOverdue = true;
+                    break; // Stop at the first missed payment
+                }
+
+                cal.add(Calendar.MONTH, 1); // Check next month
+            }
+
+            bannerOverdue.setVisibility(isOverdue ? View.VISIBLE : View.GONE);
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+            bannerOverdue.setVisibility(View.GONE);
+        }
     }
 
     private void updatePlanUI(String planName) {
         if (planName == null) return;
         tvPlanTitle.setText(planName.toUpperCase() + " FIBER");
 
-        // Fetch the Price from the 'Plans' master list based on name
         mDatabase.child("Plans").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 boolean found = false;
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     String dbPlanName = ds.child("name").getValue(String.class);
-
                     if (dbPlanName != null && dbPlanName.equalsIgnoreCase(planName)) {
                         String price = ds.child("price").getValue(String.class);
                         tvPriceMonth.setText("₱ " + price + "/month");
@@ -154,24 +199,21 @@ public class UserBillingFragment extends Fragment {
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
             Date installDate = sdf.parse(installDateStr);
+            if (installDate == null) return;
 
             Calendar cal = Calendar.getInstance();
             cal.setTime(installDate);
-
             Calendar today = Calendar.getInstance();
 
-            // Rolling Logic: Add 1 month repeatedly until the date is in the future
-            while (cal.before(today)) {
+            while (cal.before(today) || cal.equals(today)) {
                 cal.add(Calendar.MONTH, 1);
             }
 
-            // Set formatted date to UI
             if (tvNextBillingDate != null) {
                 tvNextBillingDate.setText(sdf.format(cal.getTime()));
             }
 
         } catch (ParseException e) {
-            e.printStackTrace();
             if (tvNextBillingDate != null) tvNextBillingDate.setText("N/A");
         }
     }
