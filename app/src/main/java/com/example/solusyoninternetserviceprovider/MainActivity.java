@@ -48,7 +48,6 @@ public class MainActivity extends AppCompatActivity {
                         android.util.Log.w("FCM", "Fetching FCM registration token failed", task.getException());
                         return;
                     }
-                    // Get new FCM registration token
                     String token = task.getResult();
                     android.util.Log.d("FCM", "Current Device Token: " + token);
                 });
@@ -73,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        // 4. Determine User Role (Subscriber vs Admin)
+        // 4. Determine User Role
         isSubscriber = getIntent().getBooleanExtra("IS_SUBSCRIBER", false);
         if (!isSubscriber) {
             SharedPreferences prefs = getSharedPreferences("UserSession", MODE_PRIVATE);
@@ -81,21 +80,20 @@ public class MainActivity extends AppCompatActivity {
             isSubscriber = "subscriber".equalsIgnoreCase(role);
         }
 
-        // 5. UI and Sync Setup
+        // 5. UI Setup
         setupLayout(isSubscriber);
         syncWelcomeHeader();
         syncProfilePicture();
 
-        // 6. Handle Incoming Deep Links (e.g., Password Reset Email)
+        // 6. Handle Deep Links
         handleDeepLink(getIntent());
 
-        // 7. Decide which Fragment to load first
+        // 7. Decide which Fragment to load
         if (savedInstanceState == null) {
             if (getIntent().getBooleanExtra("SHOW_LOGIN", false)) {
                 loadFragment(new LoginFragment(), false);
                 toggleSystemUI(false);
             } else {
-                // Check session status or redirect to default dashboard
                 performSessionRoleCheck();
             }
         }
@@ -106,8 +104,6 @@ public class MainActivity extends AppCompatActivity {
             android.net.Uri data = intent.getData();
             if (data.getQueryParameter("oobCode") != null) {
                 String oobCode = data.getQueryParameter("oobCode");
-
-                // Navigate to SetNewPasswordFragment and pass the code
                 SetNewPasswordFragment fragment = new SetNewPasswordFragment();
                 Bundle bundle = new Bundle();
                 bundle.putString("oobCode", oobCode);
@@ -116,11 +112,11 @@ public class MainActivity extends AppCompatActivity {
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragment_container, fragment)
                         .commit();
-
-                toggleSystemUI(false); // Hide bars for reset screen
+                toggleSystemUI(false);
             }
         }
     }
+
     private void syncProfilePicture() {
         String uid = FirebaseAuth.getInstance().getUid();
         if (uid == null) return;
@@ -195,23 +191,23 @@ public class MainActivity extends AppCompatActivity {
 
                     if ("completed".equalsIgnoreCase(applicationStatus)) {
                         loadFragment(new ClientDashboardFragment(), false);
-                        toggleSystemUI(true); // SHOW UI
+                        toggleSystemUI(true);
                     } else if ("approved".equalsIgnoreCase(applicationStatus)) {
-                        loadFragment(new ClientDashboardFragment(), false); // Correct way to load
+                        // FIX: Redirect to Client Dashboard instead of Billing history
+                        loadFragment(new ClientDashboardFragment(), false);
                         toggleSystemUI(true);
                     } else {
-                        navigateToReceipt(snapshot); // Activity handles its own UI
+                        navigateToReceipt(snapshot);
                     }
                 } else {
                     applicationStatus = "";
                     loadFragment(new UserDashboardFragment(), false);
-                    toggleSystemUI(false); // HIDE UI for Step 2 Form
+                    toggleSystemUI(false);
                 }
             }
             @Override public void onCancelled(@NonNull DatabaseError error) {}
         });
     }
-
 
     private void restartForSubscriber() {
         Intent intent = new Intent(MainActivity.this, MainActivity.class);
@@ -233,9 +229,17 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
-    public void setupLayout(boolean subscriberMode) { this.isSubscriber = subscriberMode; setContentView(isSubscriber ? R.layout.activity_main_user : R.layout.activity_main);
+    public void setupLayout(boolean subscriberMode) {
+        this.isSubscriber = subscriberMode;
+        setContentView(isSubscriber ? R.layout.activity_main_user : R.layout.activity_main);
+
         bottomNavigationView = findViewById(R.id.bottomNavigation);
         ivProfile = findViewById(R.id.ivProfile);
+
+        // FIX: Add click listener to profile icon for Admin Logout
+        if (ivProfile != null) {
+            ivProfile.setOnClickListener(v -> showLogoutDialog());
+        }
 
         if (bottomNavigationView != null) {
             bottomNavigationView.setOnItemSelectedListener(item -> {
@@ -244,12 +248,11 @@ public class MainActivity extends AppCompatActivity {
 
                 if (itemId == R.id.nav_dashboard || itemId == R.id.nav_sub_dashboard) {
                     if (isSubscriber) {
-                        // Fix: Dashboard tab now shows the real Dashboard for both "approved" and "completed" users.
+                        // Fix: Dashboard tab shows real Dashboard for "approved" and "completed" users.
                         if ("completed".equalsIgnoreCase(applicationStatus) || "approved".equalsIgnoreCase(applicationStatus)) {
                             selectedFragment = new ClientDashboardFragment();
                             toggleSystemUI(true);
                         } else {
-                            // New user or no application yet, show the form
                             selectedFragment = new UserDashboardFragment();
                             toggleSystemUI(false);
                         }
